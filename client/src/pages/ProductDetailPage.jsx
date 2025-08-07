@@ -1,7 +1,7 @@
 // client/src/pages/ProductDetailPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import styled from 'styled-components';
 
@@ -34,7 +34,7 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/products/${id}`);
+        const response = await api.get(`/products/${id}`);
         setProduct(response.data);
         if (response.data.sizes && response.data.sizes.length > 0) {
           setSelectedSize(response.data.sizes[0]);
