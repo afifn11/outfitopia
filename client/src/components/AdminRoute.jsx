@@ -11,7 +11,7 @@ const AdminRoute = ({ children }) => {
     }
 
     if (!isAuthenticated || user.role !== 'admin') {
-        return <Navigate to="/" replace />; // Redirect ke home jika bukan admin
+        return <Navigate to="/" replace />; 
     }
 
     return children;

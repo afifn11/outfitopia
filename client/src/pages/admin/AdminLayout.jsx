@@ -23,6 +23,11 @@ const AdminLayout = () => {
                                 Kelola Pesanan
                             </NavLink>
                         </li>
+                        <li className="mb-2">
+                            <NavLink to="/admin/reviews" style={({ isActive }) => isActive ? activeLinkStyle : undefined} className="block p-2 rounded hover:bg-gray-700">
+                                Kelola Ulasan
+                            </NavLink>
+                        </li>
                     </ul>
                 </nav>
             </aside>

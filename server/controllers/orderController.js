@@ -1,4 +1,5 @@
-// /server/controllers/orderController.js
+// /server/controllers/orderController.js (Versi Final)
+
 const pool = require('../config/db');
 
 const createOrder = async (req, res) => {
@@ -58,6 +59,35 @@ const getMyOrders = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch orders' });
     }
-}
+};
 
-module.exports = { createOrder, getMyOrders };
+// ===================================
+// === FUNGSI BARU DITAMBAHKAN DI SINI ===
+// ===================================
+const getOrderById = async (req, res) => {
+    const userId = req.user.id;
+    const orderId = req.params.id;
+    try {
+        // Validasi bahwa pesanan ini milik user yang sedang login
+        const [order] = await pool.query('SELECT * FROM orders WHERE id = ? AND user_id = ?', [orderId, userId]);
+        if (order.length === 0) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Ambil semua item yang berhubungan dengan order ini, join dengan nama produk
+        const [items] = await pool.query(
+            `SELECT oi.*, p.name as productName, p.image as productImage 
+             FROM order_items oi 
+             JOIN products p ON oi.product_id = p.id 
+             WHERE oi.order_id = ?`,
+            [orderId]
+        );
+
+        res.json({ order: order[0], items });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch order details' });
+    }
+};
+
+
+module.exports = { createOrder, getMyOrders, getOrderById }; // <-- Tambahkan getOrderById

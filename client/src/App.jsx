@@ -16,6 +16,7 @@ import AdminLayout from './pages/admin/AdminLayout';
 import ManageProductsPage from './pages/admin/ManageProductsPage';
 import ManageOrdersPage from './pages/admin/ManageOrdersPage';
 import ProductFormPage from './pages/admin/ProductFormPage';
+import ManageReviewsPage from './pages/admin/ManageReviewsPage';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <Route path="products/new" element={<ProductFormPage />} />
             <Route path="products/edit/:id" element={<ProductFormPage />} />
             <Route path="orders" element={<ManageOrdersPage />} />
+            <Route path="reviews" element={<ManageReviewsPage />} />
           </Route>
         </Routes>
       </main>

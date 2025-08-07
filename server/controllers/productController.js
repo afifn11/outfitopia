@@ -3,7 +3,28 @@ const pool = require('../config/db');
 
 const getAllProducts = async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM products');
+        // Ambil parameter query dari URL
+        const { search, sortBy, order } = req.query;
+
+        let sql = 'SELECT * FROM products';
+        const params = [];
+
+        // 1. Bangun klausa WHERE untuk pencarian
+        if (search) {
+            sql += ' WHERE name LIKE ?';
+            params.push(`%${search}%`);
+        }
+
+        // 2. Bangun klausa ORDER BY untuk pengurutan
+        // Whitelist untuk mencegah SQL Injection pada nama kolom
+        const allowedSortBy = ['name', 'price'];
+        const sortKey = allowedSortBy.includes(sortBy) ? sortBy : 'name'; // Default sort by name
+
+        const sortOrder = (order && order.toUpperCase() === 'DESC') ? 'DESC' : 'ASC'; // Default sort ASC
+
+        sql += ` ORDER BY ${sortKey} ${sortOrder}`;
+
+        const [rows] = await pool.query(sql, params);
 
         const products = rows.map(product => ({
             ...product,
