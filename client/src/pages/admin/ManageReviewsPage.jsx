@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 const ManageReviewsPage = () => {
     const [reviews, setReviews] = useState([]);
@@ -11,7 +15,7 @@ const ManageReviewsPage = () => {
             setReviews(response.data);
         } catch (error) {
             console.error('Failed to fetch reviews', error);
-            alert('Gagal memuat data ulasan.');
+            MySwal.fire('Gagal!', 'Gagal memuat data ulasan.', 'error');
         } finally {
             setLoading(false);
         }
@@ -21,17 +25,26 @@ const ManageReviewsPage = () => {
         fetchReviews();
     }, []);
 
-    const handleDelete = async (reviewId) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus ulasan ini secara permanen? Tindakan ini juga akan memperbarui rating produk.')) {
-            try {
-                await api.delete(`/admin/reviews/${reviewId}`);
-                // Hapus review dari state untuk update UI secara instan
-                setReviews(prevReviews => prevReviews.filter(r => r.id !== reviewId));
-                alert('Ulasan berhasil dihapus.');
-            } catch (error) {
-                alert(error.response?.data?.message || 'Gagal menghapus ulasan.');
+    const handleDelete = (reviewId) => {
+        MySwal.fire({
+            title: 'Hapus Ulasan Ini?',
+            text: "Tindakan ini bersifat permanen!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await api.delete(`/admin/reviews/${reviewId}`);
+                    setReviews(prevReviews => prevReviews.filter(r => r.id !== reviewId));
+                    MySwal.fire('Dihapus!', 'Ulasan telah berhasil dihapus.', 'success');
+                } catch (error) {
+                    MySwal.fire('Gagal!', error.response?.data?.message || 'Gagal menghapus ulasan.', 'error');
+                }
             }
-        }
+        });
     };
 
     if (loading) return <p>Loading ulasan...</p>;

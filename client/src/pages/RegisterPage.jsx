@@ -1,27 +1,42 @@
-// /client/src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 const RegisterPage = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         try {
             const response = await api.post('/auth/register', { name, email, password });
             const { token, ...userData } = response.data;
             login(userData, token);
-            navigate('/');
+
+            MySwal.fire({
+                title: 'Pendaftaran Berhasil!',
+                text: `Selamat datang, ${userData.name}!`,
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                navigate('/');
+            });
+
         } catch (err) {
-            setError(err.response?.data?.message || 'Gagal mendaftar');
+            MySwal.fire({
+                title: 'Gagal Mendaftar',
+                text: err.response?.data?.message || 'Terjadi kesalahan saat mendaftar.',
+                icon: 'error'
+            });
         }
     };
 
@@ -30,7 +45,6 @@ const RegisterPage = () => {
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
                 <h1 className="text-2xl font-bold text-center">Daftar Akun Baru</h1>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {error && <p className="text-red-500 text-center">{error}</p>}
                     <div>
                         <label className="block text-sm font-medium">Nama</label>
                         <input type="text" value={name} onChange={e => setName(e.target.value)} required className="w-full px-3 py-2 mt-1 border rounded-md" />

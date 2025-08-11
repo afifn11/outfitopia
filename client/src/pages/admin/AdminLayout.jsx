@@ -4,7 +4,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 const AdminLayout = () => {
     const activeLinkStyle = {
-        backgroundColor: '#374151', // gray-700
+        backgroundColor: '#374151',
         color: 'white',
     };
 

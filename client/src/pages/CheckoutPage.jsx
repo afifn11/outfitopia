@@ -1,8 +1,11 @@
-// /client/src/pages/CheckoutPage.jsx (Versi Baru)
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 const CheckoutPage = () => {
   const { cartItems, clearCart } = useCart();
@@ -22,22 +25,28 @@ const CheckoutPage = () => {
             cartItems,
             totalPrice,
         });
-
-        alert('Pesanan berhasil dibuat!');
         clearCart();
-        navigate('/order-success');
+        MySwal.fire({
+            title: 'Pesanan Diterima!',
+            text: 'Terima kasih, pesanan Anda akan segera kami proses.',
+            icon: 'success'
+        }).then(() => {
+            navigate('/order-success');
+        });
     } catch (error) {
         console.error('Error placing order:', error);
-        alert(error.response?.data?.message || 'Gagal membuat pesanan.');
+        MySwal.fire({
+            title: 'Gagal Membuat Pesanan',
+            text: error.response?.data?.message || 'Terjadi kesalahan pada server.',
+            icon: 'error'
+        });
     }
   };
 
   return (
-    // JSX form tidak berubah, hanya logikanya saja
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Checkout</h1>
       <form onSubmit={handlePlaceOrder}>
-        {/* ... isi form sama seperti sebelumnya ... */}
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-2/3">
             <h2 className="text-2xl font-semibold mb-4">Detail Pengiriman</h2>

@@ -1,7 +1,9 @@
-// /client/src/pages/admin/ManageOrdersPage.jsx
-
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 const ManageOrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -13,7 +15,7 @@ const ManageOrdersPage = () => {
             setOrders(response.data);
         } catch (error) {
             console.error('Failed to fetch orders', error);
-            alert('Gagal memuat data pesanan.');
+            MySwal.fire('Gagal!', 'Gagal memuat data pesanan.', 'error');
         } finally {
             setLoading(false);
         }
@@ -26,17 +28,23 @@ const ManageOrdersPage = () => {
     const handleStatusChange = async (orderId, newStatus) => {
         try {
             await api.put(`/admin/orders/${orderId}/status`, { status: newStatus });
-            
-            // Update status di state secara lokal untuk responsivitas UI
             setOrders(prevOrders => 
                 prevOrders.map(order => 
                     order.id === orderId ? { ...order, status: newStatus } : order
                 )
             );
-            alert('Status pesanan berhasil diperbarui.');
+            MySwal.fire({
+                title: 'Berhasil',
+                text: 'Status pesanan telah diperbarui.',
+                icon: 'success',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+            });
         } catch (error) {
             console.error('Failed to update order status', error);
-            alert('Gagal memperbarui status pesanan.');
+            MySwal.fire('Gagal!', 'Gagal memperbarui status pesanan.', 'error');
         }
     };
 

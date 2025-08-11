@@ -1,10 +1,17 @@
-// /client/src/pages/ProductDetailPage.jsx (Versi Ramping Final)
+// /client/src/pages/ProductDetailPage.jsx (Versi Final dengan SweetAlert)
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import styled from 'styled-components';
+
+// --- TAMBAHKAN IMPORT BARU DI SINI ---
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
+// ------------------------------------
 
 const AddToCartButton = styled.button`
   background-color: #1f2937; // gray-800
@@ -57,8 +64,32 @@ const ProductDetailPage = () => {
     }, [id]);
 
     const handleAddToCart = () => {
+      if (!selectedSize) {
+          MySwal.fire({
+            title: 'Oops...',
+            text: 'Silakan pilih ukuran terlebih dahulu!',
+            icon: 'warning'
+          });
+          return;
+      }
       addToCart({ ...product, selectedSize });
-      alert(`${product.name} (${selectedSize}) telah ditambahkan ke keranjang!`);
+      
+      // --- PERBAIKAN DENGAN SWEETALERT2 DI SINI ---
+      MySwal.fire({
+          title: 'Berhasil!',
+          text: `${product.name} telah ditambahkan ke keranjang.`,
+          icon: 'success',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+              toast.addEventListener('mouseenter', Swal.stopTimer);
+              toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+      });
+      // ---------------------------------------------
     };
 
     if (loading) return <div className="text-center mt-10">Loading detail produk...</div>;
@@ -86,7 +117,7 @@ const ProductDetailPage = () => {
                     <p className="text-gray-600 mb-6">{product.description}</p>
                     <div className="mb-6">
                         <h3 className="font-semibold mb-2">Pilih Ukuran:</h3>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                         {product.sizes.map(size => (
                             <button 
                                 key={size} 
