@@ -1,17 +1,22 @@
-// /client/src/pages/ProductDetailPage.jsx (Versi Final dengan SweetAlert)
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
 import styled from 'styled-components';
-
-// --- TAMBAHKAN IMPORT BARU DI SINI ---
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const MySwal = withReactContent(Swal);
-// ------------------------------------
+
+// Fungsi helper untuk memformat harga
+const formatPrice = (price) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(price);
+};
 
 const AddToCartButton = styled.button`
   background-color: #1f2937; // gray-800
@@ -39,6 +44,8 @@ const ProductDetailPage = () => {
     const [selectedSize, setSelectedSize] = useState('');
     const { addToCart } = useCart();
     
+    const [quantity, setQuantity] = useState(1);
+
     useEffect(() => {
         const fetchProductAndReviews = async () => {
             setLoading(true);
@@ -72,12 +79,12 @@ const ProductDetailPage = () => {
           });
           return;
       }
-      addToCart({ ...product, selectedSize });
       
-      // --- PERBAIKAN DENGAN SWEETALERT2 DI SINI ---
+      addToCart({ ...product, selectedSize }, quantity);
+      
       MySwal.fire({
           title: 'Berhasil!',
-          text: `${product.name} telah ditambahkan ke keranjang.`,
+          text: `${quantity} pcs ${product.name} telah ditambahkan ke keranjang.`,
           icon: 'success',
           toast: true,
           position: 'top-end',
@@ -89,7 +96,6 @@ const ProductDetailPage = () => {
               toast.addEventListener('mouseleave', Swal.resumeTimer);
           }
       });
-      // ---------------------------------------------
     };
 
     if (loading) return <div className="text-center mt-10">Loading detail produk...</div>;
@@ -113,7 +119,12 @@ const ProductDetailPage = () => {
                             <span className="text-gray-500">Belum ada ulasan</span>
                         )}
                     </div>
-                    <p className="text-2xl text-gray-800 mb-4">Rp {product.price.toLocaleString('id-ID')}</p>
+                    
+                    {/* ==================================== */}
+                    {/* === PERBAIKAN FORMAT HARGA DI SINI === */}
+                    {/* ==================================== */}
+                    <p className="text-2xl text-gray-800 mb-4 font-semibold">{formatPrice(product.price)}</p>
+
                     <p className="text-gray-600 mb-6">{product.description}</p>
                     <div className="mb-6">
                         <h3 className="font-semibold mb-2">Pilih Ukuran:</h3>
@@ -129,13 +140,33 @@ const ProductDetailPage = () => {
                         ))}
                         </div>
                     </div>
+
+                    <div className="mb-6">
+                        <h3 className="font-semibold mb-2">Kuantitas:</h3>
+                        <div className="flex items-center border rounded-md w-fit">
+                            <button 
+                                onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                                className="px-4 py-2 text-lg font-bold bg-gray-200 hover:bg-gray-300 rounded-l-md"
+                                disabled={quantity <= 1}
+                            >
+                                -
+                            </button>
+                            <span className="px-6 py-2 text-lg w-16 text-center">{quantity}</span>
+                            <button 
+                                onClick={() => setQuantity(prev => prev + 1)}
+                                className="px-4 py-2 text-lg font-bold bg-gray-200 hover:bg-gray-300 rounded-r-md"
+                            >
+                                +
+                            </button>
+                        </div>
+                    </div>
+
                     <AddToCartButton onClick={handleAddToCart}>
                         Tambah ke Keranjang
                     </AddToCartButton>
                 </div>
             </div>
 
-            {/* Bagian Ulasan (HANYA DAFTAR ULASAN, TANPA FORM) */}
             <div className="mt-12">
                 <h2 className="text-2xl font-bold mb-4">Ulasan Produk</h2>
                 <div className="space-y-4">

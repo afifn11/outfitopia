@@ -1,13 +1,16 @@
-// /server/routes/productRoutes.js
 const express = require('express');
-const { getAllProducts, getProductById } = require('../controllers/productController');
-
 const router = express.Router();
+const { 
+    getAllProducts, 
+    getProductById,
+    getFeaturedProducts,
+    getBestsellingProducts
+} = require('../controllers/productController');
 
-// Rute untuk GET /api/products/
+// Urutan penting: Rute yang lebih spesifik ('featured', 'bestsellers') harus sebelum rute dinamis ('/:id')
+router.get('/featured', getFeaturedProducts);
+router.get('/bestsellers', getBestsellingProducts);
 router.get('/', getAllProducts);
-
-// Rute untuk GET /api/products/:id
 router.get('/:id', getProductById);
 
 module.exports = router;

@@ -25,7 +25,7 @@ const Navbar = () => {
     return (
         <nav className="bg-white shadow-md p-4 sticky top-0 z-50">
             <div className="container mx-auto flex justify-between items-center">
-                <Link to="/" className="text-2xl font-bold text-gray-800">TokoBaju</Link>
+                <Link to="/" className="text-2xl font-bold text-gray-800">Outfitopia.</Link>
                 <div className="flex items-center gap-6">
                     {isAuthenticated ? (
                         <>

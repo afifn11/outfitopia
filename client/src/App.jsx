@@ -1,52 +1,59 @@
-// /client/src/App.jsx (Versi Akhir)
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import ProtectedRoute from './components/ProtectedRoute'; // Import
-import HomePage from './pages/HomePage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import OrderSuccessPage from './pages/OrderSuccessPage';
-import LoginPage from './pages/LoginPage'; // Import
-import RegisterPage from './pages/RegisterPage'; // Import
-import ProfilePage from './pages/ProfilePage'; // Import
+import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import AdminLayout from './pages/admin/AdminLayout';
-import ManageProductsPage from './pages/admin/ManageProductsPage';
-import ManageOrdersPage from './pages/admin/ManageOrdersPage';
-import ProductFormPage from './pages/admin/ProductFormPage';
-import ManageReviewsPage from './pages/admin/ManageReviewsPage';
+
+// Dynamic Imports (Code Splitting)
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
+const AllProductsPage = lazy(() => import('./pages/AllProductsPage')); 
+
+// Admin Pages
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const ManageProductsPage = lazy(() => import('./pages/admin/ManageProductsPage'));
+const ManageOrdersPage = lazy(() => import('./pages/admin/ManageOrdersPage'));
+const ProductFormPage = lazy(() => import('./pages/admin/ProductFormPage'));
+const ManageReviewsPage = lazy(() => import('./pages/admin/ManageReviewsPage'));
+
+const LoadingFallback = () => <div className="text-center mt-20">Loading...</div>;
 
 function App() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <Navbar />
       <main>
-        <Routes>
-          {/* Rute Publik */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/product/:id" element={<ProductDetailPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/order-success" element={<OrderSuccessPage />} />
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/product/:id" element={<ProductDetailPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/order-success" element={<OrderSuccessPage />} />
+            <Route path="/category/:categoryName" element={<CategoryPage />} />
+            <Route path="/products" element={<AllProductsPage />} /> {/* Pastikan Anda membuat file AllProductsPage.jsx */}
 
-          {/* Rute Terproteksi */}
-          <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
-          {/* Rute Admin */}
-          <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-            {/* Halaman default bisa diarahkan ke kelola produk */}
-            <Route index element={<ManageProductsPage />} /> 
-            <Route path="products" element={<ManageProductsPage />} />
-            <Route path="products/new" element={<ProductFormPage />} />
-            <Route path="products/edit/:id" element={<ProductFormPage />} />
-            <Route path="orders" element={<ManageOrdersPage />} />
-            <Route path="reviews" element={<ManageReviewsPage />} />
-          </Route>
-        </Routes>
+            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+              <Route index element={<ManageProductsPage />} /> 
+              <Route path="products" element={<ManageProductsPage />} />
+              <Route path="products/new" element={<ProductFormPage />} />
+              <Route path="products/edit/:id" element={<ProductFormPage />} />
+              <Route path="orders" element={<ManageOrdersPage />} />
+              <Route path="reviews" element={<ManageReviewsPage />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </main>
     </div>
   )
