@@ -1,8 +1,26 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+
+// --- Komponen Layout Wrapper ---
+const PublicLayout = () => (
+    <>
+        <Navbar />
+        <main>
+            <Outlet /> {/* <-- Halaman publik akan dirender di sini */}
+        </main>
+    </>
+);
+
+const AdminLayoutWrapper = () => (
+    <AdminRoute>
+        <AdminLayout />
+    </AdminRoute>
+);
+// ------------------------------
+
 
 // Dynamic Imports (Code Splitting)
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -18,20 +36,25 @@ const AllProductsPage = lazy(() => import('./pages/AllProductsPage'));
 
 // Admin Pages
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
 const ManageProductsPage = lazy(() => import('./pages/admin/ManageProductsPage'));
 const ManageOrdersPage = lazy(() => import('./pages/admin/ManageOrdersPage'));
 const ProductFormPage = lazy(() => import('./pages/admin/ProductFormPage'));
 const ManageReviewsPage = lazy(() => import('./pages/admin/ManageReviewsPage'));
 
-const LoadingFallback = () => <div className="text-center mt-20">Loading...</div>;
+const LoadingFallback = () => (
+    <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-900"></div>
+    </div>
+);
 
 function App() {
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <Navbar />
-      <main>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
+    <div className="bg-slate-50 min-h-screen">
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          {/* --- RUTE PUBLIK & USER (menggunakan PublicLayout) --- */}
+          <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
@@ -39,22 +62,23 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/category/:categoryName" element={<CategoryPage />} />
-            <Route path="/products" element={<AllProductsPage />} /> {/* Pastikan Anda membuat file AllProductsPage.jsx */}
-
+            <Route path="/products" element={<AllProductsPage />} />
+            
             <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          </Route>
 
-            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-              <Route index element={<ManageProductsPage />} /> 
-              <Route path="products" element={<ManageProductsPage />} />
-              <Route path="products/new" element={<ProductFormPage />} />
-              <Route path="products/edit/:id" element={<ProductFormPage />} />
-              <Route path="orders" element={<ManageOrdersPage />} />
-              <Route path="reviews" element={<ManageReviewsPage />} />
-            </Route>
-          </Routes>
-        </Suspense>
-      </main>
+          {/* --- RUTE ADMIN (menggunakan AdminLayout mandiri) --- */}
+          <Route path="/admin" element={<AdminLayoutWrapper />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="products" element={<ManageProductsPage />} />
+            <Route path="products/new" element={<ProductFormPage />} />
+            <Route path="products/edit/:id" element={<ProductFormPage />} />
+            <Route path="orders" element={<ManageOrdersPage />} />
+            <Route path="reviews" element={<ManageReviewsPage />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </div>
   )
 }

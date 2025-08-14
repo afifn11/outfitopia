@@ -1,4 +1,4 @@
-// /server/routes/adminRoutes.js (Versi Final dengan Rute Ulasan)
+// /server/routes/adminRoutes.js 
 
 const express = require('express');
 const router = express.Router();
@@ -10,8 +10,8 @@ const {
     deleteProduct, 
     getAllOrders, 
     updateOrderStatus,
-    getAllReviews,      // <- Perubahan di sini
-    deleteReview        // <- Perubahan di sini
+    getAllReviews,      
+    deleteReview        
 } = require('../controllers/adminController');
 
 // Semua rute di file ini akan diproteksi oleh 'protect' dan 'isAdmin'
@@ -26,9 +26,6 @@ router.delete('/products/:id', deleteProduct);
 router.get('/orders', getAllOrders);
 router.put('/orders/:id/status', updateOrderStatus);
 
-// ===================================
-// === RUTE BARU DITAMBAHKAN DI SINI ===
-// ===================================
 // Rute Ulasan
 router.get('/reviews', getAllReviews);
 router.delete('/reviews/:id', deleteReview);

@@ -15,8 +15,6 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         if (token) {
             api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            // Di aplikasi nyata, Anda mungkin ingin memverifikasi token dengan endpoint /api/user/me
-            // Untuk saat ini kita asumsikan token valid dan ambil data user dari localStorage
             const storedUser = localStorage.getItem('user');
             if (storedUser) {
                 setUser(JSON.parse(storedUser));
