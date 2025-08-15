@@ -1,47 +1,89 @@
-// /server/controllers/adminController.js (Versi Final dengan Manajemen Ulasan)
-
 const pool = require('../config/db');
 
-// --- Product Management ---
+// --- Helper Function untuk mengelola asosiasi kategori ---
+const updateProductCategories = async (connection, productId, categoryIds = []) => {
+    // 1. Hapus semua asosiasi kategori lama untuk produk ini
+    await connection.query('DELETE FROM product_categories WHERE product_id = ?', [productId]);
+    
+    // 2. Jika ada kategori baru yang dipilih, masukkan asosiasi yang baru
+    if (categoryIds && categoryIds.length > 0) {
+        const values = categoryIds.map(categoryId => [productId, categoryId]);
+        await connection.query('INSERT INTO product_categories (product_id, category_id) VALUES ?', [values]);
+    }
+};
+
+
+// --- Product Management (BAGIAN YANG DIPERBAIKI) ---
 exports.createProduct = async (req, res) => {
-    const { name, price, description, image, sizes } = req.body;
+    // Ambil data baru: is_featured dan category_ids
+    const { name, price, description, image, sizes, is_featured, category_ids } = req.body;
     const sizesString = Array.isArray(sizes) ? sizes.join(',') : '';
+    
+    const connection = await pool.getConnection();
     try {
-        const [result] = await pool.query(
-            'INSERT INTO products (name, price, description, image, sizes) VALUES (?, ?, ?, ?, ?)',
-            [name, price, description, image, sizesString]
+        await connection.beginTransaction();
+
+        // Masukkan data ke tabel products, termasuk is_featured
+        const [result] = await connection.query(
+            'INSERT INTO products (name, price, description, image, sizes, is_featured) VALUES (?, ?, ?, ?, ?, ?)',
+            [name, price, description, image, sizesString, is_featured || false]
         );
-        res.status(201).json({ id: result.insertId, ...req.body });
+        const productId = result.insertId;
+
+        // Gunakan helper function untuk menyimpan kategori
+        await updateProductCategories(connection, productId, category_ids);
+
+        await connection.commit();
+        res.status(201).json({ id: productId, ...req.body });
+
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
+        if (connection) await connection.rollback();
+        console.error("Create product error:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    } finally {
+        if (connection) connection.release();
     }
 };
 
 exports.updateProduct = async (req, res) => {
     const { id } = req.params;
-    const { name, price, description, image, sizes } = req.body;
+    // Ambil data baru: is_featured dan category_ids
+    const { name, price, description, image, sizes, is_featured, category_ids } = req.body;
     const sizesString = Array.isArray(sizes) ? sizes.join(',') : '';
+
+    const connection = await pool.getConnection();
     try {
-        await pool.query(
-            'UPDATE products SET name = ?, price = ?, description = ?, image = ?, sizes = ? WHERE id = ?',
-            [name, price, description, image, sizesString, id]
+        await connection.beginTransaction();
+
+        // Update data di tabel products, termasuk is_featured
+        await connection.query(
+            'UPDATE products SET name = ?, price = ?, description = ?, image = ?, sizes = ?, is_featured = ? WHERE id = ?',
+            [name, price, description, image, sizesString, is_featured || false, id]
         );
+
+        // Gunakan helper function untuk memperbarui kategori
+        await updateProductCategories(connection, id, category_ids);
+        
+        await connection.commit();
         res.json({ message: 'Product updated successfully' });
+
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
+        if (connection) await connection.rollback();
+        console.error("Update product error:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    } finally {
+        if (connection) connection.release();
     }
 };
 
 exports.deleteProduct = async (req, res) => {
     const { id } = req.params;
     try {
-        // Di aplikasi nyata, Anda mungkin ingin melakukan soft delete
         await pool.query('DELETE FROM products WHERE id = ?', [id]);
         res.json({ message: 'Product deleted successfully' });
     } catch (error) {
-        // Error jika produk sudah ada di order_items
         if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-            return res.status(400).json({ message: 'Cannot delete product that is part of an existing order.' });
+            return res.status(400).json({ message: 'Tidak dapat menghapus produk yang sudah menjadi bagian dari pesanan.' });
         }
         res.status(500).json({ message: 'Server error', error });
     }
@@ -50,7 +92,6 @@ exports.deleteProduct = async (req, res) => {
 // --- Order Management ---
 exports.getAllOrders = async (req, res) => {
     try {
-        // JOIN dengan tabel users untuk mendapatkan nama pelanggan
         const [orders] = await pool.query(
             'SELECT o.*, u.name as userName, u.email as userEmail FROM orders o JOIN users u ON o.user_id = u.id ORDER BY o.order_date DESC'
         );
@@ -71,15 +112,9 @@ exports.updateOrderStatus = async (req, res) => {
     }
 };
 
-
-// ===================================
-// === FUNGSI BARU DITAMBAHKAN DI SINI ===
-// ===================================
-
 // --- Review Management ---
 exports.getAllReviews = async (req, res) => {
     try {
-        // JOIN dengan tabel products dan users untuk data yang lebih kaya
         const [reviews] = await pool.query(`
             SELECT r.id, r.rating, r.comment, r.created_at, p.name as productName, u.name as userName
             FROM reviews r
@@ -94,35 +129,26 @@ exports.getAllReviews = async (req, res) => {
 };
 
 exports.deleteReview = async (req, res) => {
-    const { id } = req.params; // id dari review yang akan dihapus
-    
+    const { id } = req.params;
     let connection;
     try {
         connection = await pool.getConnection();
         await connection.beginTransaction();
-
-        // 1. Ambil product_id dari review yang akan dihapus sebelum dihapus
         const [reviewData] = await connection.query('SELECT product_id FROM reviews WHERE id = ?', [id]);
         if (reviewData.length === 0) {
             await connection.rollback();
             return res.status(404).json({ message: 'Review not found' });
         }
         const { product_id } = reviewData[0];
-
-        // 2. Hapus review
         await connection.query('DELETE FROM reviews WHERE id = ?', [id]);
-
-        // 3. PENTING: Kalkulasi ulang rating rata-rata dan jumlah review untuk produk terkait
         await connection.query(`
             UPDATE products p SET
             p.num_reviews = (SELECT COUNT(*) FROM reviews r WHERE r.product_id = ?),
             p.average_rating = COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = ?), 0)
             WHERE p.id = ?
         `, [product_id, product_id, product_id]);
-
         await connection.commit();
         res.json({ message: 'Review deleted successfully' });
-
     } catch (error) {
         if (connection) await connection.rollback();
         res.status(500).json({ message: 'Server error', error });

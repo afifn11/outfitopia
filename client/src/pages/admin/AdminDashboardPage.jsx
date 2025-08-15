@@ -47,7 +47,7 @@ const AdminDashboardPage = () => {
             
             // Fetch all required data
             const [productsRes, ordersRes, reviewsRes] = await Promise.all([
-                api.get('/products?limit=5'),
+                api.get('/products?limit=9999'), // Ambil semua produk untuk hitungan
                 api.get('/admin/orders'),
                 api.get('/admin/reviews')
             ]);
@@ -57,9 +57,11 @@ const AdminDashboardPage = () => {
             const reviews = reviewsRes.data || [];
 
             // Calculate stats
+            // --- PERBAIKAN DI BARIS BERIKUT: Mengubah string menjadi angka dengan parseFloat ---
             const totalRevenue = orders
                 .filter(order => order.status === 'Completed')
-                .reduce((sum, order) => sum + order.total_amount, 0);
+                .reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
+            // ---------------------------------------------------------------------------------
 
             const orderStats = {
                 pending: orders.filter(o => o.status === 'Pending').length,
@@ -77,7 +79,7 @@ const AdminDashboardPage = () => {
                 .slice(0, 3);
 
             setDashboardData({
-                totalProducts: products.length,
+                totalProducts: productsRes.data.totalProducts || 0, // Mengambil total produk dari API
                 totalOrders: orders.length,
                 totalReviews: reviews.length,
                 totalRevenue,
@@ -114,12 +116,12 @@ const AdminDashboardPage = () => {
 
     const getStatusColor = (status) => {
         const colors = {
-            'Pending': 'text-amber-600 bg-amber-50',
-            'Shipped': 'text-blue-600 bg-blue-50',
-            'Completed': 'text-green-600 bg-green-50',
-            'Cancelled': 'text-red-600 bg-red-50'
+            'Pending': 'text-amber-600 bg-amber-100',
+            'Shipped': 'text-blue-600 bg-blue-100',
+            'Completed': 'text-green-600 bg-green-100',
+            'Cancelled': 'text-red-600 bg-red-100'
         };
-        return colors[status] || 'text-gray-600 bg-gray-50';
+        return colors[status] || 'text-gray-600 bg-gray-100';
     };
 
     if (loading) {
@@ -147,8 +149,8 @@ const AdminDashboardPage = () => {
                         <h1 className="text-2xl font-bold text-slate-900">Dashboard Admin</h1>
                         <p className="text-slate-600 mt-1">Selamat datang kembali! Berikut ringkasan toko Anda.</p>
                     </div>
-                    <div className="text-sm text-slate-500">
-                        <Calendar className="w-4 h-4 inline mr-1" />
+                    <div className="text-sm text-slate-500 hidden sm:flex items-center">
+                        <Calendar className="w-4 h-4 inline mr-2" />
                         {new Date().toLocaleDateString('id-ID', { 
                             weekday: 'long', 
                             year: 'numeric', 
@@ -237,7 +239,7 @@ const AdminDashboardPage = () => {
             {/* Order Status Overview */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <h2 className="text-lg font-semibold text-slate-900 mb-6">Status Pesanan</h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {Object.entries(dashboardData.orderStats).map(([status, count]) => {
                         const Icon = getStatusIcon(status.charAt(0).toUpperCase() + status.slice(1));
                         const colorClass = getStatusColor(status.charAt(0).toUpperCase() + status.slice(1));
@@ -308,12 +310,12 @@ const AdminDashboardPage = () => {
                             dashboardData.recentReviews.map((review) => (
                                 <div key={review.id} className="p-4 hover:bg-slate-50 transition-colors">
                                     <div className="flex items-start justify-between">
-                                        <div className="flex-1">
+                                        <div className="flex-1 mr-4">
                                             <p className="font-medium text-slate-900">{review.productName}</p>
                                             <p className="text-sm text-slate-600 mb-2">{review.userName}</p>
                                             <p className="text-sm text-slate-700 italic line-clamp-2">"{review.comment}"</p>
                                         </div>
-                                        <div className="flex items-center ml-4">
+                                        <div className="flex items-center shrink-0">
                                             <Star className="w-4 h-4 text-yellow-400 fill-current" />
                                             <span className="text-sm font-medium text-slate-700 ml-1">{review.rating}</span>
                                         </div>
