@@ -120,9 +120,6 @@ const ProductDetailPage = () => {
                         )}
                     </div>
                     
-                    {/* ==================================== */}
-                    {/* === PERBAIKAN FORMAT HARGA DI SINI === */}
-                    {/* ==================================== */}
                     <p className="text-2xl text-gray-800 mb-4 font-semibold">{formatPrice(product.price)}</p>
 
                     <p className="text-gray-600 mb-6">{product.description}</p>

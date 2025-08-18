@@ -39,7 +39,6 @@ const CartPage = () => {
               <div>
                 <h2 className="font-semibold text-gray-800">{item.name}</h2>
                 <p className="text-sm text-gray-500">Ukuran: {item.selectedSize}</p>
-                {/* --- PERBAIKAN FORMAT HARGA PER ITEM --- */}
                 <p className="text-sm text-gray-600">{formatPrice(item.price)}</p>
               </div>
             </div>
@@ -71,7 +70,6 @@ const CartPage = () => {
           <div className="text-right">
             <h2 className="text-xl font-bold text-gray-800">
                 Total:
-                {/* --- PERBAIKAN FORMAT TOTAL HARGA --- */}
                 <span className="ml-2 text-2xl">{formatPrice(totalPrice)}</span>
             </h2>
             <p className="text-sm text-gray-500">Pajak dan ongkos kirim dihitung saat checkout.</p>

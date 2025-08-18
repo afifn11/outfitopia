@@ -88,8 +88,6 @@ const AllProductsPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Efek ini hanya berjalan saat komponen dimuat atau URL berubah
-    // Tujuannya adalah menyinkronkan state dengan URL
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
         setFilters({
@@ -99,7 +97,6 @@ const AllProductsPage = () => {
         });
     }, [location.search]);
 
-    // Efek ini berjalan saat state `filters` berubah, dan akan memanggil API
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
@@ -123,12 +120,11 @@ const AllProductsPage = () => {
 
         const handler = setTimeout(() => {
             fetchProducts();
-        }, 300); // Debounce untuk mencegah pemanggilan API berlebihan saat mengetik
+        }, 300); 
 
         return () => clearTimeout(handler);
     }, [filters]);
 
-    // Fungsi untuk memperbarui URL, yang akan memicu `useEffect` di atas
     const updateURL = (newFilters) => {
         const queryParams = new URLSearchParams();
         queryParams.set('page', newFilters.currentPage);

@@ -134,7 +134,6 @@ const CategoryPage = () => {
                                     </div>
                                     <div className="p-4">
                                         <h2 className="text-lg font-semibold truncate text-gray-800">{product.name}</h2>
-                                        {/* --- PERBAIKAN FORMAT HARGA DITERAPKAN DI SINI --- */}
                                         <p className="text-gray-700 mt-2 font-medium">{formatPrice(product.price)}</p>
                                     </div>
                                 </Link>

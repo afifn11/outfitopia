@@ -47,7 +47,7 @@ const AdminDashboardPage = () => {
             
             // Fetch all required data
             const [productsRes, ordersRes, reviewsRes] = await Promise.all([
-                api.get('/products?limit=9999'), // Ambil semua produk untuk hitungan
+                api.get('/products?limit=9999'), 
                 api.get('/admin/orders'),
                 api.get('/admin/reviews')
             ]);
@@ -56,12 +56,9 @@ const AdminDashboardPage = () => {
             const orders = ordersRes.data || [];
             const reviews = reviewsRes.data || [];
 
-            // Calculate stats
-            // --- PERBAIKAN DI BARIS BERIKUT: Mengubah string menjadi angka dengan parseFloat ---
             const totalRevenue = orders
                 .filter(order => order.status === 'Completed')
                 .reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
-            // ---------------------------------------------------------------------------------
 
             const orderStats = {
                 pending: orders.filter(o => o.status === 'Pending').length,
@@ -79,7 +76,7 @@ const AdminDashboardPage = () => {
                 .slice(0, 3);
 
             setDashboardData({
-                totalProducts: productsRes.data.totalProducts || 0, // Mengambil total produk dari API
+                totalProducts: productsRes.data.totalProducts || 0, 
                 totalOrders: orders.length,
                 totalReviews: reviews.length,
                 totalRevenue,

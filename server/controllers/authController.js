@@ -1,7 +1,7 @@
-// /server/controllers/authController.js
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { sendEmail } = require('../utils/emailService'); // <- Import layanan email
 
 const generateToken = (id, role) => {
     return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -31,6 +31,29 @@ const registerUser = async (req, res) => {
         );
 
         const newUser = { id: result.insertId, name, email, role: 'user' };
+
+        // --- MENGIRIM EMAIL NOTIFIKASI REGISTRASI ---
+        try {
+            await sendEmail({
+                to: newUser.email,
+                subject: 'Selamat Datang di TokoBaju!',
+                html: `
+                    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                        <h1 style="color: #333;">Halo, ${newUser.name}!</h1>
+                        <p>Terima kasih telah mendaftar di TokoBaju. Akun Anda telah berhasil dibuat.</p>
+                        <p>Kini Anda bisa mulai menjelajahi koleksi terbaik kami dan menemukan gaya yang paling cocok untuk Anda.</p>
+                        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">
+                            Mulai Belanja
+                        </a>
+                        <p style="margin-top: 30px; font-size: 0.9em; color: #777;">Salam hangat,<br>Tim TokoBaju</p>
+                    </div>
+                `
+            });
+        } catch (emailError) {
+            console.error("Gagal mengirim email selamat datang:", emailError);
+            // Proses registrasi tetap dianggap berhasil meskipun email gagal terkirim.
+        }
+        // ---------------------------------------------
 
         res.status(201).json({
             ...newUser,

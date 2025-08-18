@@ -2,8 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import OrderHistoryItem from '../components/OrderHistoryItem'; // Import komponen baru
-
+import OrderHistoryItem from '../components/OrderHistoryItem';
 const ProfilePage = () => {
     const { user } = useAuth();
     const [orders, setOrders] = useState([]);

@@ -4,12 +4,10 @@ import api from '../services/api';
 import ProductCarousel from '../components/ProductCarousel';
 
 const AllProductsPage = () => {
-    // Logika untuk menampilkan semua produk dengan filter dan search
-    // Bisa dibuatkan komponen sendiri atau pindahkan logika dari HomePage lama ke sini
+
     return (
         <div className="container mx-auto p-6">
             <h1 className="text-3xl font-bold mb-6">Semua Produk</h1>
-            {/* Di sini Anda bisa menambahkan komponen untuk filter dan daftar produk */}
         </div>
     );
 };

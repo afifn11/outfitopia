@@ -1,4 +1,6 @@
 const pool = require('../config/db');
+// --- TAMBAHKAN IMPORT LAYANAN EMAIL DI SINI ---
+const { sendEmail } = require('../utils/emailService');
 
 // --- Helper Function untuk mengelola asosiasi kategori ---
 const updateProductCategories = async (connection, productId, categoryIds = []) => {
@@ -13,7 +15,7 @@ const updateProductCategories = async (connection, productId, categoryIds = []) 
 };
 
 
-// --- Product Management (BAGIAN YANG DIPERBAIKI) ---
+// --- Product Management ---
 exports.createProduct = async (req, res) => {
     // Ambil data baru: is_featured dan category_ids
     const { name, price, description, image, sizes, is_featured, category_ids } = req.body;
@@ -105,7 +107,43 @@ exports.updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     try {
+        // 1. Update status pesanan di database
         await pool.query('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
+        
+        // --- LOGIKA NOTIFIKASI EMAIL DIMULAI DI SINI ---
+        // 2. Dapatkan email dan nama pelanggan dari pesanan yang diupdate
+        const [orders] = await pool.query(
+            'SELECT o.id, u.email, u.name FROM orders o JOIN users u ON o.user_id = u.id WHERE o.id = ?',
+            [id]
+        );
+
+        if (orders.length > 0) {
+            const customer = orders[0];
+            try {
+                // 3. Kirim email menggunakan layanan email terpusat
+                await sendEmail({
+                    to: customer.email,
+                    subject: `Update Status Pesanan Anda #${customer.id}`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                            <h2 style="color: #4f46e5;">Status Pesanan Diperbarui</h2>
+                            <p>Halo, <strong>${customer.name}</strong>,</p>
+                            <p>Ada pembaruan untuk pesanan Anda dengan nomor <strong>#${customer.id}</strong>.</p>
+                            <p>Status pesanan Anda sekarang adalah:</p>
+                            <p style="font-size: 1.2em; font-weight: bold; color: #1e40af;">${status}</p>
+                            ${status === 'Shipped' ? '<p>Pesanan Anda sedang dalam perjalanan! Kami akan segera memberikan nomor resi jika tersedia.</p>' : ''}
+                            ${status === 'Completed' ? '<p>Pesanan Anda telah selesai. Jangan ragu untuk memberikan ulasan produk di halaman profil Anda. Terima kasih telah berbelanja!</p>' : ''}
+                            <p style="margin-top: 30px; font-size: 0.9em; color: #777;">Salam hangat,<br>Tim TokoBaju</p>
+                        </div>
+                    `
+                });
+            } catch (emailError) {
+                // Jangan hentikan proses utama, cukup catat (log) error pengiriman email
+                console.error(`Gagal mengirim email update status untuk order #${id}:`, emailError);
+            }
+        }
+        // --- LOGIKA NOTIFIKASI EMAIL SELESAI ---
+        
         res.json({ message: 'Order status updated successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });

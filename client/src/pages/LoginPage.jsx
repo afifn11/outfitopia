@@ -4,8 +4,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-
-// --- TAMBAHKAN IMPORT BARU DI SINI ---
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
@@ -15,8 +13,6 @@ const MySwal = withReactContent(Swal);
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    // State error tidak lagi diperlukan karena kita menggunakan pop-up
-    // const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -54,7 +50,6 @@ const LoginPage = () => {
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
                 <h1 className="text-2xl font-bold text-center">Login</h1>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Pesan error berbasis teks di sini sudah tidak diperlukan lagi */}
                     <div>
                         <label className="block text-sm font-medium">Email</label>
                         <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-3 py-2 mt-1 border rounded-md" />

@@ -30,11 +30,9 @@ const ProductFormPage = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Selalu ambil daftar semua kategori
                 const categoriesRes = await api.get('/categories');
                 setAllCategories(categoriesRes.data);
 
-                // Jika mode edit, ambil juga data produk spesifik
                 if (isEditMode) {
                     const productRes = await api.get(`/products/${id}`);
                     const fetchedProduct = productRes.data;
@@ -45,8 +43,8 @@ const ProductFormPage = () => {
                         description: fetchedProduct.description || '',
                         image: fetchedProduct.image || '',
                         sizes: fetchedProduct.sizes.join(', '),
-                        is_featured: fetchedProduct.is_featured === 1, // Konversi 1/0 dari DB ke true/false
-                        category_ids: fetchedProduct.categories.map(c => c.id) // Ambil hanya ID dari objek kategori
+                        is_featured: fetchedProduct.is_featured === 1, 
+                        category_ids: fetchedProduct.categories.map(c => c.id) 
                     });
                 }
             } catch (err) {
@@ -86,7 +84,7 @@ const ProductFormPage = () => {
         const productData = {
             ...product,
             price: parseFloat(product.price),
-            sizes: product.sizes.split(',').map(s => s.trim()).filter(s => s), // Ubah string kembali jadi array
+            sizes: product.sizes.split(',').map(s => s.trim()).filter(s => s), 
         };
 
         try {
@@ -151,7 +149,6 @@ const ProductFormPage = () => {
             {/* Form */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <form onSubmit={handleSubmit} className="divide-y divide-slate-200">
-                    {/* Basic Information */}
                     <div className="p-6 space-y-6">
                         <div className="flex items-center space-x-3 mb-6">
                             <div className="p-2 bg-indigo-100 rounded-lg">
