@@ -29,7 +29,7 @@ const AdminLayout = () => {
     const SidebarContent = () => (
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-slate-900 px-6 pb-4">
             <Link to="/" className="flex h-16 shrink-0 items-center text-white">
-                <h1 className="text-xl font-bold">Admin Panel</h1>
+                <h1 className="text-xl font-bold">Outfitopia</h1>
             </Link>
             <nav className="flex flex-1 flex-col">
                 <ul role="list" className="flex flex-1 flex-col gap-y-7">

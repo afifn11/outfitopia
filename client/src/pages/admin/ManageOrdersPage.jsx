@@ -6,34 +6,31 @@ import withReactContent from 'sweetalert2-react-content';
 
 const MySwal = withReactContent(Swal);
 
+// --- FUNGSI HELPER BARU UNTUK FORMAT HARGA ---
+const formatPrice = (price) => {
+    const numberPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numberPrice)) {
+        return 'Rp 0';
+    }
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(numberPrice);
+};
+// ---------------------------------------------
+
 // Status badge component
 const StatusBadge = ({ status }) => {
     const statusConfig = {
-        'Pending': {
-            icon: Clock,
-            className: 'bg-amber-50 text-amber-700 border-amber-200',
-            iconClassName: 'text-amber-500'
-        },
-        'Shipped': {
-            icon: Truck,
-            className: 'bg-blue-50 text-blue-700 border-blue-200',
-            iconClassName: 'text-blue-500'
-        },
-        'Completed': {
-            icon: CheckCircle,
-            className: 'bg-green-50 text-green-700 border-green-200',
-            iconClassName: 'text-green-500'
-        },
-        'Cancelled': {
-            icon: XCircle,
-            className: 'bg-red-50 text-red-700 border-red-200',
-            iconClassName: 'text-red-500'
-        }
+        'Pending': { icon: Clock, className: 'bg-amber-50 text-amber-700 border-amber-200', iconClassName: 'text-amber-500' },
+        'Shipped': { icon: Truck, className: 'bg-blue-50 text-blue-700 border-blue-200', iconClassName: 'text-blue-500' },
+        'Completed': { icon: CheckCircle, className: 'bg-green-50 text-green-700 border-green-200', iconClassName: 'text-green-500' },
+        'Cancelled': { icon: XCircle, className: 'bg-red-50 text-red-700 border-red-200', iconClassName: 'text-red-500' }
     };
-
     const config = statusConfig[status] || statusConfig['Pending'];
     const Icon = config.icon;
-
     return (
         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${config.className}`}>
             <Icon className={`w-3 h-3 mr-1 ${config.iconClassName}`} />
@@ -45,24 +42,16 @@ const StatusBadge = ({ status }) => {
 // Order skeleton loader
 const OrderSkeleton = () => (
     <tr className="border-b border-slate-100 animate-pulse">
-        <td className="px-6 py-4">
-            <div className="h-4 bg-slate-200 rounded w-20"></div>
-        </td>
+        <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
         <td className="px-6 py-4">
             <div className="space-y-2">
                 <div className="h-4 bg-slate-200 rounded w-32"></div>
                 <div className="h-3 bg-slate-200 rounded w-48"></div>
             </div>
         </td>
-        <td className="px-6 py-4">
-            <div className="h-4 bg-slate-200 rounded w-24"></div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="h-4 bg-slate-200 rounded w-28"></div>
-        </td>
-        <td className="px-6 py-4">
-            <div className="h-6 bg-slate-200 rounded-full w-20"></div>
-        </td>
+        <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-24"></div></td>
+        <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-28"></div></td>
+        <td className="px-6 py-4"><div className="h-6 bg-slate-200 rounded-full w-20"></div></td>
     </tr>
 );
 
@@ -223,8 +212,8 @@ const ManageOrdersPage = () => {
                             onClick={() => setFilter(filterOption.key)}
                             className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                                 filter === filterOption.key
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
-                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                             }`}
                         >
                             {filterOption.label}
@@ -298,8 +287,9 @@ const ManageOrdersPage = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
+                                            {/* --- PERBAIKAN UTAMA DI SINI --- */}
                                             <span className="font-medium text-slate-900">
-                                                Rp {order.total_amount.toLocaleString('id-ID')}
+                                                {formatPrice(order.total_amount)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
