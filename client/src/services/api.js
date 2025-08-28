@@ -1,8 +1,7 @@
-// /client/src/services/api.js (Versi Final)
+// /client/src/services/api.js (Versi Final untuk Produksi)
 import axios from 'axios';
 
-// Kode ini secara cerdas akan menggunakan /api saat online (di Vercel) 
-// dan http://localhost:5000/api saat di komputer Anda.
+// Kode ini secara cerdas memilih URL yang benar
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
