@@ -13,7 +13,6 @@ import {
     CheckCircle,
     XCircle,
     ArrowUpRight,
-    ArrowDownRight,
     Calendar,
     Eye
 } from 'lucide-react';
@@ -56,9 +55,15 @@ const AdminDashboardPage = () => {
             const orders = ordersRes.data || [];
             const reviews = reviewsRes.data || [];
 
+            // PERBAIKAN: Konsistensi perhitungan revenue
             const totalRevenue = orders
                 .filter(order => order.status === 'Completed')
-                .reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
+                .reduce((sum, order) => {
+                    const amount = typeof order.total_amount === 'string' 
+                        ? parseFloat(order.total_amount) 
+                        : order.total_amount;
+                    return sum + (isNaN(amount) ? 0 : amount);
+                }, 0);
 
             const orderStats = {
                 pending: orders.filter(o => o.status === 'Pending').length,
@@ -76,7 +81,7 @@ const AdminDashboardPage = () => {
                 .slice(0, 3);
 
             setDashboardData({
-                totalProducts: productsRes.data.totalProducts || 0, 
+                totalProducts: productsRes.data.totalProducts || products.length, 
                 totalOrders: orders.length,
                 totalReviews: reviews.length,
                 totalRevenue,
@@ -92,13 +97,18 @@ const AdminDashboardPage = () => {
         }
     };
 
+    // PERBAIKAN: Fungsi formatPrice yang konsisten dengan sistem lain
     const formatPrice = (price) => {
+        const numberPrice = typeof price === 'string' ? parseFloat(price) : price;
+        if (isNaN(numberPrice)) {
+            return 'Rp 0';
+        }
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
-        }).format(price);
+        }).format(numberPrice);
     };
 
     const getStatusIcon = (status) => {
@@ -124,7 +134,7 @@ const AdminDashboardPage = () => {
     if (loading) {
         return (
             <div className="space-y-6">
-                {/* Loading skeleton */}
+                {/* Loading skeleton - sama seperti sebelumnya */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 animate-pulse">
@@ -158,7 +168,7 @@ const AdminDashboardPage = () => {
                 </div>
             </div>
 
-            {/* Stats Cards */}
+            {/* Stats Cards - sama seperti sebelumnya */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between">
@@ -272,6 +282,7 @@ const AdminDashboardPage = () => {
                                             <p className="text-sm text-slate-600">{order.userName}</p>
                                         </div>
                                         <div className="text-right">
+                                            {/* PERBAIKAN: Format harga konsisten */}
                                             <p className="font-medium text-slate-900">{formatPrice(order.total_amount)}</p>
                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                                                 {order.status}

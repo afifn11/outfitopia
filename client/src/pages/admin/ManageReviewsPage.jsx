@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Star, MessageSquare, User, Package, Trash2, Search } from 'lucide-react';
+import { 
+    Star, 
+    MessageSquare, 
+    User, 
+    Package, 
+    Trash2, 
+    Search, 
+    ChevronLeft, 
+    ChevronRight 
+} from 'lucide-react';
 import api from '../../services/api';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const MySwal = withReactContent(Swal);
+
+// ============================================================================
+// HELPER COMPONENTS
+// ============================================================================
 
 // Star Rating Component
 const StarRating = ({ rating }) => {
@@ -23,7 +36,7 @@ const StarRating = ({ rating }) => {
     );
 };
 
-// Review skeleton loader
+// Review Skeleton Loader
 const ReviewSkeleton = () => (
     <tr className="border-b border-slate-100 animate-pulse">
         <td className="px-6 py-4">
@@ -48,11 +61,30 @@ const ReviewSkeleton = () => (
     </tr>
 );
 
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 const ManageReviewsPage = () => {
+    // ========================================================================
+    // STATE MANAGEMENT
+    // ========================================================================
+    
+    // Data states
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // Filter states
     const [searchTerm, setSearchTerm] = useState('');
     const [ratingFilter, setRatingFilter] = useState('all');
+    
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(8);
+
+    // ========================================================================
+    // DATA FETCHING
+    // ========================================================================
 
     const fetchReviews = async () => {
         try {
@@ -74,6 +106,10 @@ const ManageReviewsPage = () => {
     useEffect(() => {
         fetchReviews();
     }, []);
+
+    // ========================================================================
+    // EVENT HANDLERS
+    // ========================================================================
 
     const handleDelete = (reviewId, productName) => {
         MySwal.fire({
@@ -110,6 +146,17 @@ const ManageReviewsPage = () => {
         });
     };
 
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
+    // ========================================================================
+    // DATA PROCESSING & CALCULATIONS
+    // ========================================================================
+
+    // Filter reviews based on search and rating filter
     const filteredReviews = reviews.filter(review => {
         const matchesSearch = review.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                              review.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -120,6 +167,14 @@ const ManageReviewsPage = () => {
         return matchesSearch && matchesRating;
     });
 
+    // Pagination calculations
+    const totalItems = filteredReviews.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentReviews = filteredReviews.slice(startIndex, endIndex);
+
+    // Statistics calculations
     const reviewStats = {
         total: reviews.length,
         averageRating: reviews.length > 0 ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1) : 0,
@@ -130,9 +185,43 @@ const ManageReviewsPage = () => {
         oneStar: reviews.filter(r => r.rating === 1).length,
     };
 
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisible = 5;
+        
+        if (totalPages <= maxVisible) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            if (currentPage <= 3) {
+                pages.push(1, 2, 3, 4, '...', totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+            } else {
+                pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+            }
+        }
+        
+        return pages;
+    };
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, ratingFilter]);
+
+    // ========================================================================
+    // RENDER COMPONENT
+    // ========================================================================
+
     return (
         <div className="space-y-6">
-            {/* Header */}
+            
+            {/* ================================================================ */}
+            {/* HEADER SECTION */}
+            {/* ================================================================ */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">Kelola Ulasan</h1>
@@ -140,8 +229,11 @@ const ManageReviewsPage = () => {
                 </div>
             </div>
 
-            {/* Stats Cards */}
+            {/* ================================================================ */}
+            {/* STATISTICS CARDS */}
+            {/* ================================================================ */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Total Reviews Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <div className="flex items-center">
                         <div className="p-2 bg-indigo-100 rounded-lg">
@@ -154,6 +246,7 @@ const ManageReviewsPage = () => {
                     </div>
                 </div>
 
+                {/* Average Rating Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <div className="flex items-center">
                         <div className="p-2 bg-yellow-100 rounded-lg">
@@ -166,6 +259,7 @@ const ManageReviewsPage = () => {
                     </div>
                 </div>
 
+                {/* 5 Star Reviews Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <div className="flex items-center">
                         <div className="p-2 bg-green-100 rounded-lg">
@@ -178,6 +272,7 @@ const ManageReviewsPage = () => {
                     </div>
                 </div>
 
+                {/* 1 Star Reviews Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <div className="flex items-center">
                         <div className="p-2 bg-red-100 rounded-lg">
@@ -191,9 +286,12 @@ const ManageReviewsPage = () => {
                 </div>
             </div>
 
-            {/* Search and Filters */}
+            {/* ================================================================ */}
+            {/* SEARCH AND FILTERS SECTION */}
+            {/* ================================================================ */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
+                    {/* Search Input */}
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                         <input
@@ -205,6 +303,7 @@ const ManageReviewsPage = () => {
                         />
                     </div>
                     
+                    {/* Rating Filter */}
                     <div className="flex space-x-2">
                         <select
                             value={ratingFilter}
@@ -222,10 +321,16 @@ const ManageReviewsPage = () => {
                 </div>
             </div>
 
-            {/* Reviews Table */}
+            {/* ================================================================ */}
+            {/* REVIEWS TABLE SECTION */}
+            {/* ================================================================ */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                
+                {/* Table */}
                 <div className="overflow-x-auto">
                     <table className="w-full">
+                        
+                        {/* Table Header */}
                         <thead className="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-900">
@@ -254,27 +359,42 @@ const ManageReviewsPage = () => {
                                 </th>
                             </tr>
                         </thead>
+
+                        {/* Table Body */}
                         <tbody className="divide-y divide-slate-100">
+                            
+                            {/* Loading State */}
                             {loading ? (
                                 Array.from({ length: 5 }).map((_, index) => (
                                     <ReviewSkeleton key={index} />
                                 ))
-                            ) : filteredReviews.length > 0 ? (
-                                filteredReviews.map(review => (
+                            ) 
+                            
+                            /* Data State */
+                            : currentReviews.length > 0 ? (
+                                currentReviews.map(review => (
                                     <tr key={review.id} className="hover:bg-slate-50 transition-colors">
+                                        
+                                        {/* Product Name */}
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-slate-900 max-w-xs truncate">
                                                 {review.productName}
                                             </div>
                                         </td>
+
+                                        {/* User Name */}
                                         <td className="px-6 py-4">
                                             <div className="text-sm text-slate-600">
                                                 {review.userName}
                                             </div>
                                         </td>
+
+                                        {/* Rating */}
                                         <td className="px-6 py-4">
                                             <StarRating rating={review.rating} />
                                         </td>
+
+                                        {/* Comment */}
                                         <td className="px-6 py-4">
                                             <div className="max-w-md">
                                                 <p className="text-sm text-slate-700 italic line-clamp-2">
@@ -282,6 +402,8 @@ const ManageReviewsPage = () => {
                                                 </p>
                                             </div>
                                         </td>
+
+                                        {/* Actions */}
                                         <td className="px-6 py-4">
                                             <div className="flex items-center justify-end">
                                                 <button 
@@ -293,9 +415,13 @@ const ManageReviewsPage = () => {
                                                 </button>
                                             </div>
                                         </td>
+                                        
                                     </tr>
                                 ))
-                            ) : (
+                            ) 
+                            
+                            /* Empty State */
+                            : (
                                 <tr>
                                     <td colSpan="5" className="px-6 py-12 text-center">
                                         <div className="text-slate-400">
@@ -316,9 +442,75 @@ const ManageReviewsPage = () => {
                                     </td>
                                 </tr>
                             )}
+
                         </tbody>
                     </table>
                 </div>
+
+                {/* ================================================================ */}
+                {/* PAGINATION SECTION */}
+                {/* ================================================================ */}
+                {!loading && totalPages > 1 && (
+                    <div className="bg-white px-6 py-4 border-t border-slate-200">
+                        <div className="flex items-center justify-between">
+                            
+                            {/* Pagination Info */}
+                            <div className="text-sm text-slate-600">
+                                Menampilkan {startIndex + 1} - {Math.min(endIndex, totalItems)} dari {totalItems} ulasan
+                            </div>
+                            
+                            {/* Pagination Controls */}
+                            <div className="flex items-center space-x-1">
+                                
+                                {/* Previous Button */}
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className={`p-2 rounded-lg border transition-colors ${
+                                        currentPage === 1
+                                        ? 'border-slate-200 text-slate-400 cursor-not-allowed'
+                                        : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+
+                                {/* Page Numbers */}
+                                {getPageNumbers().map((page, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => typeof page === 'number' && handlePageChange(page)}
+                                        className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                                            page === currentPage
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : typeof page === 'number'
+                                            ? 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                                            : 'border-transparent text-slate-400 cursor-default'
+                                        }`}
+                                        disabled={typeof page !== 'number'}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                {/* Next Button */}
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className={`p-2 rounded-lg border transition-colors ${
+                                        currentPage === totalPages
+                                        ? 'border-slate-200 text-slate-400 cursor-not-allowed'
+                                        : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                                
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );

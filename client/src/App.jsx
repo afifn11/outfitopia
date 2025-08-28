@@ -3,15 +3,18 @@ import { Routes, Route, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import Footer from './components/Footer';
 
 // --- Komponen Layout Wrapper ---
 const PublicLayout = () => (
-    <>
+    // 1. Tambahkan div pembungkus dengan flexbox untuk sticky footer
+    <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main>
-            <Outlet /> {/* <-- Halaman publik akan dirender di sini */}
+        <main className="flex-grow">
+            <Outlet />
         </main>
-    </>
+        <Footer />
+    </div>
 );
 
 const AdminLayoutWrapper = () => (
@@ -33,6 +36,11 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const AllProductsPage = lazy(() => import('./pages/AllProductsPage')); 
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const FaqPage = lazy(() => import('./pages/FaqPage'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
+const ReturnPolicyPage = lazy(() => import('./pages/ReturnPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
 
 // Admin Pages
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
@@ -63,6 +71,11 @@ function App() {
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/category/:categoryName" element={<CategoryPage />} />
             <Route path="/products" element={<AllProductsPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/return-policy" element={<ReturnPolicyPage />} />
+            <Route path="/terms-of-service" element={<TermsOfServicePage />} />
             
             <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

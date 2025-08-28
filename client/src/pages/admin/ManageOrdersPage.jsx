@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, DollarSign, Package, Clock, Truck, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, User, DollarSign, Package, Clock, Truck, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../services/api';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -59,6 +59,10 @@ const ManageOrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     const fetchOrders = async () => {
         try {
@@ -116,12 +120,52 @@ const ManageOrdersPage = () => {
         return order.status.toLowerCase() === filter.toLowerCase();
     });
 
+    // Pagination calculations
+    const totalItems = filteredOrders.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentOrders = filteredOrders.slice(startIndex, endIndex);
+
+    // Reset to first page when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter]);
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
     const orderStats = {
         total: orders.length,
         pending: orders.filter(o => o.status === 'Pending').length,
         shipped: orders.filter(o => o.status === 'Shipped').length,
         completed: orders.filter(o => o.status === 'Completed').length,
         cancelled: orders.filter(o => o.status === 'Cancelled').length
+    };
+
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisible = 5;
+        
+        if (totalPages <= maxVisible) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            if (currentPage <= 3) {
+                pages.push(1, 2, 3, 4, '...', totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+            } else {
+                pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+            }
+        }
+        
+        return pages;
     };
 
     return (
@@ -259,8 +303,8 @@ const ManageOrdersPage = () => {
                                 Array.from({ length: 5 }).map((_, index) => (
                                     <OrderSkeleton key={index} />
                                 ))
-                            ) : filteredOrders.length > 0 ? (
-                                filteredOrders.map(order => (
+                            ) : currentOrders.length > 0 ? (
+                                currentOrders.map(order => (
                                     <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-6 py-4">
                                             <span className="font-mono text-sm font-medium text-slate-900">
@@ -287,7 +331,6 @@ const ManageOrdersPage = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {/* --- PERBAIKAN UTAMA DI SINI --- */}
                                             <span className="font-medium text-slate-900">
                                                 {formatPrice(order.total_amount)}
                                             </span>
@@ -330,6 +373,63 @@ const ManageOrdersPage = () => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="bg-white px-6 py-4 border-t border-slate-200">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-slate-600">
+                                Menampilkan {startIndex + 1} - {Math.min(endIndex, totalItems)} dari {totalItems} pesanan
+                            </div>
+                            
+                            <div className="flex items-center space-x-1">
+                                {/* Previous button */}
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className={`p-2 rounded-lg border transition-colors ${
+                                        currentPage === 1
+                                        ? 'border-slate-200 text-slate-400 cursor-not-allowed'
+                                        : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+
+                                {/* Page numbers */}
+                                {getPageNumbers().map((page, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => typeof page === 'number' && handlePageChange(page)}
+                                        className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                                            page === currentPage
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : typeof page === 'number'
+                                            ? 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                                            : 'border-transparent text-slate-400 cursor-default'
+                                        }`}
+                                        disabled={typeof page !== 'number'}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
+                                {/* Next button */}
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className={`p-2 rounded-lg border transition-colors ${
+                                        currentPage === totalPages
+                                        ? 'border-slate-200 text-slate-400 cursor-not-allowed'
+                                        : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
