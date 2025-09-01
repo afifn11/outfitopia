@@ -1,5 +1,3 @@
-// /server/controllers/orderController.js (Versi Final)
-
 const pool = require('../config/db');
 
 const createOrder = async (req, res) => {
@@ -16,10 +14,12 @@ const createOrder = async (req, res) => {
         await connection.beginTransaction();
 
         // 1. Simpan ke tabel 'orders'
+        // --- PERBAIKAN DI SINI: Mengganti 'delivery_address' menjadi 'shipping_address' ---
         const [orderResult] = await connection.query(
-            'INSERT INTO orders (user_id, total_amount, delivery_address, customer_name, customer_phone) VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO orders (user_id, total_amount, shipping_address, customer_name, customer_phone) VALUES (?, ?, ?, ?, ?)',
             [userId, totalPrice, userDetails.address, userDetails.name, userDetails.phone]
         );
+        // --------------------------------------------------------------------------------
 
         const orderId = orderResult.insertId;
 
@@ -61,9 +61,6 @@ const getMyOrders = async (req, res) => {
     }
 };
 
-// ===================================
-// === FUNGSI BARU DITAMBAHKAN DI SINI ===
-// ===================================
 const getOrderById = async (req, res) => {
     const userId = req.user.id;
     const orderId = req.params.id;
@@ -89,5 +86,4 @@ const getOrderById = async (req, res) => {
     }
 };
 
-
-module.exports = { createOrder, getMyOrders, getOrderById }; // <-- Tambahkan getOrderById
+module.exports = { createOrder, getMyOrders, getOrderById };
