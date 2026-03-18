@@ -1,4 +1,42 @@
-/* client/src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --black:    #0a0a0a;
+  --white:    #ffffff;
+  --gray-50:  #fafafa;
+  --gray-100: #f4f4f4;
+  --gray-200: #e8e8e8;
+  --gray-300: #d0d0d0;
+  --gray-400: #a0a0a0;
+  --gray-600: #6b6b6b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body { margin: 0; background: #fff; color: #0a0a0a; font-size: 14px; line-height: 1.6; font-family: 'Inter', system-ui, sans-serif; }
+
+@layer components {
+  .label-sm { @apply text-[11px] font-medium tracking-[0.12em] uppercase; }
+  .btn-black { @apply inline-flex items-center justify-center gap-2 bg-[#0a0a0a] text-white text-[11px] font-medium tracking-[0.12em] uppercase px-7 py-3.5 border border-[#0a0a0a] transition-opacity duration-150 hover:opacity-80 select-none cursor-pointer; }
+  .btn-outline-dark { @apply inline-flex items-center justify-center gap-2 bg-transparent text-[#0a0a0a] text-[11px] font-medium tracking-[0.12em] uppercase px-7 py-3.5 border border-[#0a0a0a] transition-all duration-150 hover:bg-[#0a0a0a] hover:text-white select-none cursor-pointer; }
+  .btn-ghost-dark { @apply inline-flex items-center gap-1.5 text-[11px] tracking-[0.06em] uppercase text-[#6b6b6b] underline underline-offset-[3px] decoration-[#d0d0d0] transition-colors duration-150 hover:text-[#0a0a0a] cursor-pointer; }
+  .input-minimal { @apply w-full bg-transparent border-b border-[#d0d0d0] text-[14px] py-2.5 px-0 outline-none placeholder:text-[#a0a0a0] focus:border-[#0a0a0a] transition-colors duration-150; }
+  .cat-chip { @apply border border-[#e8e8e8] text-[11px] tracking-[0.06em] uppercase px-4 py-2 cursor-pointer text-[#6b6b6b] bg-white hover:border-[#0a0a0a] hover:text-[#0a0a0a] transition-all duration-150; }
+  .size-btn { @apply border border-[#e8e8e8] text-[12px] tracking-[0.04em] px-3 py-1.5 cursor-pointer text-[#6b6b6b] hover:border-[#0a0a0a] hover:text-[#0a0a0a] transition-all duration-150 select-none; }
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 2px; }
+
+.page-enter { animation: fadeUp 0.2s ease forwards; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+.product-img-wrap { overflow: hidden; }
+.product-img-wrap img { transition: transform 0.5s ease; }
+.product-card-wrap:hover .product-img-wrap img { transform: scale(1.03); }
+.product-overlay { opacity: 0; transition: opacity 0.2s ease; }
+.product-card-wrap:hover .product-overlay { opacity: 1; }

@@ -27,7 +27,7 @@ const createOrder = async (req, res) => {
         const orderItemsPromises = cartItems.map(item => {
             return connection.query(
                 'INSERT INTO order_items (order_id, product_id, quantity, price, size) VALUES (?, ?, ?, ?, ?)',
-                [orderId, item.id, item.quantity, item.price, item.selectedSize]
+                [orderId, item.id, item.quantity, item.price, item.selectedSize || item.size || 'ONE SIZE']
             );
         });
 

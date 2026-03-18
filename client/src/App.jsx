@@ -58,7 +58,7 @@ const LoadingFallback = () => (
 
 function App() {
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="bg-white min-h-screen">
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           {/* --- RUTE PUBLIK & USER (menggunakan PublicLayout) --- */}

@@ -1,25 +1,11 @@
 import React from 'react';
 import InfoPageLayout from '../components/InfoPageLayout';
-
-const PrivacyPolicyPage = () => {
-    // PENTING: Teks di bawah ini hanyalah placeholder. Anda HARUS menggantinya dengan kebijakan privasi Anda yang sebenarnya.
-    return (
-        <InfoPageLayout
-            title="Kebijakan Privasi"
-            subtitle="Privasi Anda penting bagi kami."
-        >
-            <div className="prose max-w-none text-slate-600">
-                <h2>1. Informasi yang Kami Kumpulkan</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Kami mengumpulkan informasi pribadi seperti nama, alamat email, dan alamat pengiriman saat Anda mendaftar dan melakukan pemesanan.</p>
-                
-                <h2>2. Bagaimana Kami Menggunakan Informasi Anda</h2>
-                <p>Informasi yang kami kumpulkan digunakan untuk memproses transaksi Anda, mengelola akun Anda, dan, jika Anda setuju, mengirim email kepada Anda tentang produk dan penawaran khusus lainnya.</p>
-
-                <h2>3. Keamanan Data</h2>
-                <p>Kami berkomitmen untuk memastikan bahwa informasi Anda aman. Untuk mencegah akses atau pengungkapan yang tidak sah, kami telah menerapkan prosedur fisik, elektronik, dan manajerial yang sesuai untuk melindungi dan mengamankan informasi yang kami kumpulkan secara online.</p>
-            </div>
-        </InfoPageLayout>
-    );
-};
-
+const PrivacyPolicyPage = () => (
+  <InfoPageLayout title="Privacy policy">
+    <p>Last updated: {new Date().getFullYear()}</p>
+    <p>Outfitopia collects personal information including your name, email, and shipping address to process orders and improve your shopping experience. We do not sell your data to third parties.</p>
+    <p>We use cookies to maintain your session and cart. You can disable cookies in your browser settings, though this may affect functionality.</p>
+    <p>For questions about your data, contact us at privacy@outfitopia.com.</p>
+  </InfoPageLayout>
+);
 export default PrivacyPolicyPage;
