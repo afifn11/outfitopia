@@ -1,25 +1,43 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "outfitopia-server",
+  "version": "2.0.0",
+  "description": "Outfitopia Backend — refactored with TypeScript, Service Layer, HttpOnly cookies",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.3",
-    "nodemailer": "^7.0.5"
+    "node-cache": "^5.1.2",
+    "nodemailer": "^7.0.5",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/nodemailer": "^6.4.17",
+    "@types/node": "^22.0.0",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^2.0.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
   }
 }
