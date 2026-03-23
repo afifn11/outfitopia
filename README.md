@@ -8,15 +8,27 @@ Platform e-commerce fashion — React + Vite frontend, Node.js + Express backend
 
 ## Tech Stack
 
-| Layer    | Teknologi |
-|----------|-----------|
-| Frontend | React 19, Vite, Tailwind CSS, Framer Motion, React Router DOM v7 |
-| Backend  | Node.js, Express 5, nodemon |
-| Database | MySQL 8.0+ |
-| Auth     | JWT (jsonwebtoken), bcryptjs |
-| Payment  | Midtrans |
-| Email    | Nodemailer (Mailtrap untuk development) |
-| Deploy   | Vercel |
+**Frontend**
+
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![React Router](https://img.shields.io/badge/React_Router-v7-CA4245?style=for-the-badge&logo=react-router&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+
+**Backend**
+
+![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?style=for-the-badge&logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+**Layanan & Deploy**
+
+![Midtrans](https://img.shields.io/badge/Midtrans-Payment-003399?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PC9zdmc+&logoColor=white)
+![Nodemailer](https://img.shields.io/badge/Nodemailer-Email-22B573?style=for-the-badge&logo=gmail&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
 
 ---
 
