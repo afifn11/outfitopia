@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { formatPrice } from '../../utils/format';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Search, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../services/api';
@@ -7,15 +8,6 @@ import withReactContent from 'sweetalert2-react-content';
 
 const MySwal = withReactContent(Swal);
 
-// Fungsi helper untuk memformat harga
-const formatPrice = (price) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(price);
-};
 
 // Komponen Pagination
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {

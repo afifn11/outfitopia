@@ -109,3 +109,6 @@ CREATE TABLE reviews (
   FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
   INDEX idx_product_id (product_id)
 );
+
+-- Add google_id column for OAuth (run if not exists)
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) NULL;

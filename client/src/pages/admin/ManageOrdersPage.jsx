@@ -1,3 +1,4 @@
+import { formatPrice } from '../../utils/format';
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, DollarSign, Package, Clock, Truck, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../services/api';
@@ -6,20 +7,6 @@ import withReactContent from 'sweetalert2-react-content';
 
 const MySwal = withReactContent(Swal);
 
-// --- FUNGSI HELPER BARU UNTUK FORMAT HARGA ---
-const formatPrice = (price) => {
-    const numberPrice = typeof price === 'string' ? parseFloat(price) : price;
-    if (isNaN(numberPrice)) {
-        return 'Rp 0';
-    }
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(numberPrice);
-};
-// ---------------------------------------------
 
 // Status badge component
 const StatusBadge = ({ status }) => {

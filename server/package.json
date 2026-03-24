@@ -3,13 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "dev": "nodemon index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -18,7 +14,10 @@
     "jsonwebtoken": "^9.0.2",
     "midtrans-client": "^1.4.3",
     "mysql2": "^3.14.3",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.5",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "@google/generative-ai": "^0.21.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
