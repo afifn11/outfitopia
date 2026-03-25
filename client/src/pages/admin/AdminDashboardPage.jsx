@@ -169,23 +169,18 @@ const AdminDashboardPage = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-                        <p className="text-slate-500 mt-1 text-sm">Ringkasan performa toko Outfitopia</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-slate-500 hidden sm:flex items-center gap-1.5">
-                            <Calendar className="w-4 h-4" />
-                            {new Date().toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
-                        </span>
-                        <button onClick={fetchData} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
-                            <RefreshCw className="w-4 h-4" />
-                        </button>
-                    </div>
+            {/* Subheader row — date + refresh */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-slate-500 text-sm">Ringkasan performa toko Outfitopia</p>
+                    <span className="text-sm text-slate-400 flex items-center gap-1.5 mt-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {new Date().toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
+                    </span>
                 </div>
+                <button onClick={fetchData} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Refresh">
+                    <RefreshCw className="w-4 h-4" />
+                </button>
             </div>
 
             {/* Stats */}

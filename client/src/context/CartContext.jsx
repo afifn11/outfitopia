@@ -9,7 +9,9 @@ export const CartProvider = ({ children }) => {
     const { user } = useAuth();
     const [cartItems, setCartItems] = useState([]);
     const [isCartInitialized, setIsCartInitialized] = useState(false);
-    const prevUserRef = useRef(user);
+    // Flag untuk skip persist saat clearCart dipanggil
+    const skipPersistRef = useRef(false);
+    const prevUserRef    = useRef(user);
 
     const getCartKey = useCallback((currentUser) =>
         currentUser ? `cartItems_${currentUser.id}` : 'cartItems_guest'
@@ -17,9 +19,9 @@ export const CartProvider = ({ children }) => {
 
     useEffect(() => {
         const previousUser = prevUserRef.current;
-        const currentUser = user;
+        const currentUser  = user;
         const guestCartKey = 'cartItems_guest';
-        const userCartKey = currentUser ? getCartKey(currentUser) : null;
+        const userCartKey  = currentUser ? getCartKey(currentUser) : null;
 
         if (!previousUser && currentUser) {
             // LOGIN: merge guest cart into user cart
@@ -40,10 +42,14 @@ export const CartProvider = ({ children }) => {
             setCartItems(mergedCart);
             localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
             localStorage.removeItem(guestCartKey);
+
         } else if (previousUser && !currentUser) {
-            // LOGOUT: switch to empty guest cart
+            // LOGOUT: clear everything
+            skipPersistRef.current = true;
             setCartItems([]);
             localStorage.removeItem(guestCartKey);
+            setTimeout(() => { skipPersistRef.current = false; }, 100);
+
         } else if (!isCartInitialized) {
             // INITIAL LOAD
             try {
@@ -56,16 +62,17 @@ export const CartProvider = ({ children }) => {
         if (!isCartInitialized) setIsCartInitialized(true);
     }, [user, getCartKey, isCartInitialized]);
 
-    // Persist cart to localStorage
+    // Persist cart to localStorage — skip when clearing
     useEffect(() => {
         if (!isCartInitialized) return;
+        if (skipPersistRef.current) return;
         const cartKey = getCartKey(user);
         localStorage.setItem(cartKey, JSON.stringify(cartItems));
     }, [cartItems, user, getCartKey, isCartInitialized]);
 
     const addToCart = (product, quantityToAdd = 1) => {
         setCartItems(prev => {
-            const cartId = `${product.id}-${product.selectedSize}`;
+            const cartId   = `${product.id}-${product.selectedSize}`;
             const existing = prev.find(i => i.cartId === cartId);
             if (existing) {
                 return prev.map(i => i.cartId === cartId ? { ...i, quantity: i.quantity + quantityToAdd } : i);
@@ -75,16 +82,22 @@ export const CartProvider = ({ children }) => {
     };
 
     const updateQuantity = (cartId, newQuantity) =>
-        setCartItems(prev => prev.map(i => i.cartId === cartId ? { ...i, quantity: newQuantity } : i).filter(i => i.quantity > 0));
+        setCartItems(prev =>
+            prev.map(i => i.cartId === cartId ? { ...i, quantity: newQuantity } : i)
+                .filter(i => i.quantity > 0)
+        );
 
     const removeFromCart = (cartId) =>
         setCartItems(prev => prev.filter(i => i.cartId !== cartId));
 
-    // FIX: clearCart juga hapus dari localStorage user
+    // clearCart: set flag dulu SEBELUM setState agar persist effect tidak overwrite
     const clearCart = () => {
+        skipPersistRef.current = true;
         setCartItems([]);
         if (user) localStorage.removeItem(getCartKey(user));
         localStorage.removeItem('cartItems_guest');
+        // Reset flag setelah React selesai render cycle berikutnya
+        setTimeout(() => { skipPersistRef.current = false; }, 200);
     };
 
     return (

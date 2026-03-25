@@ -70,17 +70,11 @@ const ManageReviewsPage = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Kelola Ulasan</h1>
-                        <p className="text-slate-500 mt-1 text-sm">Moderasi ulasan produk dari pelanggan</p>
-                    </div>
-                    <button onClick={fetchReviews} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
-                        <RefreshCw className="w-4 h-4" />
-                    </button>
-                </div>
+            {/* Refresh button row */}
+            <div className="flex justify-end">
+                <button onClick={fetchReviews} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Refresh">
+                    <RefreshCw className="w-4 h-4" />
+                </button>
             </div>
 
             {/* Stats */}

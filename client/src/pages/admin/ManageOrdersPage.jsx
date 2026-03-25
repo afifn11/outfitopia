@@ -157,14 +157,6 @@ const ManageOrdersPage = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Kelola Pesanan</h1>
-                    <p className="text-slate-600 mt-1">Pantau dan kelola semua pesanan pelanggan</p>
-                </div>
-            </div>
-
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">

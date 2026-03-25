@@ -185,20 +185,15 @@ const ManageProductsPage = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Kelola Produk</h1>
-                        <p className="text-slate-600 mt-1">Kelola semua produk dalam toko Anda</p>
-                    </div>
-                    <Link 
-                        to="/admin/products/new" 
-                        className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/25 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                        <Plus className="w-5 h-5 mr-2" />
-                        Tambah Produk Baru
-                    </Link>
-                </div>
+            {/* Action bar */}
+            <div className="flex justify-end">
+                <Link
+                    to="/admin/products/new"
+                    className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/25"
+                >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Tambah Produk Baru
+                </Link>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
