@@ -1,22 +1,28 @@
 // client/src/pages/OrderSuccessPage.jsx
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 const OrderSuccessPage = () => {
-    const location  = useLocation();
+    const location       = useLocation();
     const [searchParams] = useSearchParams();
     const [orderId, setOrderId] = useState(null);
+    const { clearCart }  = useCart();
 
     useEffect(() => {
-        // Dari state (onSuccess callback Snap)
+        // Selalu clear cart saat halaman ini dibuka —
+        // ini adalah safety net karena Midtrans kadang redirect
+        // langsung ke sini tanpa melewati onSuccess callback React
+        clearCart();
+
+        // Ambil orderId dari state (Snap popup) atau URL param (Midtrans redirect)
         if (location.state?.orderId) {
             setOrderId(location.state.orderId);
-            return;
+        } else {
+            const urlOrderId = searchParams.get('order_id');
+            if (urlOrderId) setOrderId(urlOrderId);
         }
-        // Dari URL param (redirect Midtrans)
-        const urlOrderId = searchParams.get('order_id');
-        if (urlOrderId) setOrderId(urlOrderId);
-    }, [location, searchParams]);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className="min-h-[70vh] flex flex-col items-center justify-center px-6 py-16 page-enter">
