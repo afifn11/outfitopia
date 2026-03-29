@@ -9,27 +9,26 @@ import AIChatWidget from './components/AIChatWidget';
 const PublicLayout = () => (
     <div className="flex flex-col min-h-screen bg-white">
         <Navbar />
-        <main className="flex-grow">
-            <Outlet />
-        </main>
+        <main className="flex-grow"><Outlet /></main>
         <Footer />
         <AIChatWidget />
     </div>
 );
-
 const AdminLayoutWrapper = () => (
     <AdminRoute><AdminLayout /></AdminRoute>
 );
 
-// Lazy loaded pages
+// Public pages
 const HomePage           = lazy(() => import('./pages/HomePage'));
 const ProductDetailPage  = lazy(() => import('./pages/ProductDetailPage'));
 const CartPage           = lazy(() => import('./pages/CartPage'));
 const CheckoutPage       = lazy(() => import('./pages/CheckoutPage'));
 const OrderSuccessPage   = lazy(() => import('./pages/OrderSuccessPage'));
+const OrderDetailPage    = lazy(() => import('./pages/OrderDetailPage'));
 const LoginPage          = lazy(() => import('./pages/LoginPage'));
 const RegisterPage       = lazy(() => import('./pages/RegisterPage'));
 const ProfilePage        = lazy(() => import('./pages/ProfilePage'));
+const WishlistPage       = lazy(() => import('./pages/WishlistPage'));
 const CategoryPage       = lazy(() => import('./pages/CategoryPage'));
 const AllProductsPage    = lazy(() => import('./pages/AllProductsPage'));
 const ContactPage        = lazy(() => import('./pages/ContactPage'));
@@ -57,36 +56,36 @@ function App() {
     return (
         <Suspense fallback={<LoadingFallback />}>
             <Routes>
-                {/* Google OAuth success handler */}
                 <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
 
-                {/* Public routes */}
                 <Route element={<PublicLayout />}>
-                    <Route path="/"                  element={<HomePage />} />
-                    <Route path="/product/:id"       element={<ProductDetailPage />} />
-                    <Route path="/cart"              element={<CartPage />} />
-                    <Route path="/login"             element={<LoginPage />} />
-                    <Route path="/register"          element={<RegisterPage />} />
-                    <Route path="/order-success"     element={<OrderSuccessPage />} />
+                    <Route path="/"                   element={<HomePage />} />
+                    <Route path="/product/:id"        element={<ProductDetailPage />} />
+                    <Route path="/cart"               element={<CartPage />} />
+                    <Route path="/login"              element={<LoginPage />} />
+                    <Route path="/register"           element={<RegisterPage />} />
+                    <Route path="/order-success"      element={<OrderSuccessPage />} />
                     <Route path="/category/:categoryName" element={<CategoryPage />} />
-                    <Route path="/products"          element={<AllProductsPage />} />
-                    <Route path="/contact"           element={<ContactPage />} />
-                    <Route path="/faq"               element={<FaqPage />} />
-                    <Route path="/privacy-policy"    element={<PrivacyPolicyPage />} />
-                    <Route path="/return-policy"     element={<ReturnPolicyPage />} />
-                    <Route path="/terms-of-service"  element={<TermsOfServicePage />} />
-                    <Route path="/checkout"          element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-                    <Route path="/profile"           element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/products"           element={<AllProductsPage />} />
+                    <Route path="/contact"            element={<ContactPage />} />
+                    <Route path="/faq"                element={<FaqPage />} />
+                    <Route path="/privacy-policy"     element={<PrivacyPolicyPage />} />
+                    <Route path="/return-policy"      element={<ReturnPolicyPage />} />
+                    <Route path="/terms-of-service"   element={<TermsOfServicePage />} />
+                    {/* Protected routes */}
+                    <Route path="/checkout"   element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+                    <Route path="/profile"    element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/orders/:id" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
+                    <Route path="/wishlist"   element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
                 </Route>
 
-                {/* Admin routes */}
                 <Route path="/admin" element={<AdminLayoutWrapper />}>
-                    <Route index                     element={<AdminDashboardPage />} />
-                    <Route path="products"           element={<ManageProductsPage />} />
-                    <Route path="products/new"       element={<ProductFormPage />} />
-                    <Route path="products/edit/:id"  element={<ProductFormPage />} />
-                    <Route path="orders"             element={<ManageOrdersPage />} />
-                    <Route path="reviews"            element={<ManageReviewsPage />} />
+                    <Route index                    element={<AdminDashboardPage />} />
+                    <Route path="products"          element={<ManageProductsPage />} />
+                    <Route path="products/new"      element={<ProductFormPage />} />
+                    <Route path="products/edit/:id" element={<ProductFormPage />} />
+                    <Route path="orders"            element={<ManageOrdersPage />} />
+                    <Route path="reviews"           element={<ManageReviewsPage />} />
                 </Route>
             </Routes>
         </Suspense>
