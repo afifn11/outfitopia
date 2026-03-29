@@ -1,23 +1,24 @@
+// client/src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { formatPrice } from '../utils/format';
-import { User, Package, CreditCard, LogOut, ChevronRight, Star, ShoppingBag } from 'lucide-react';
+import { User, Package, CreditCard, LogOut, ChevronRight, ShoppingBag, Heart } from 'lucide-react';
 
 const STATUS_CONFIG = {
-    Pending:    { label: 'Pending',    class: 'bg-amber-50 text-amber-700 border-amber-200' },
-    Processing: { label: 'Processing', class: 'bg-blue-50 text-blue-700 border-blue-200' },
-    Shipped:    { label: 'Shipped',    class: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-    Completed:  { label: 'Completed',  class: 'bg-[#0a0a0a] text-white border-[#0a0a0a]' },
-    Cancelled:  { label: 'Cancelled',  class: 'bg-white text-[#a0a0a0] border-[#e8e8e8]' },
+    Pending:    { class: 'bg-amber-50 text-amber-700 border-amber-200' },
+    Processing: { class: 'bg-blue-50 text-blue-700 border-blue-200' },
+    Shipped:    { class: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+    Completed:  { class: 'bg-[#0a0a0a] text-white border-[#0a0a0a]' },
+    Cancelled:  { class: 'bg-white text-[#a0a0a0] border-[#e8e8e8]' },
 };
 
 const StatusBadge = ({ status }) => {
     const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.Pending;
     return (
         <span className={`inline-block border text-[10px] font-medium tracking-[0.06em] uppercase px-2.5 py-1 ${cfg.class}`}>
-            {cfg.label}
+            {status}
         </span>
     );
 };
@@ -37,7 +38,6 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const [orders, setOrders]   = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('orders');
 
     useEffect(() => {
         api.get('/orders/my-orders')
@@ -85,38 +85,38 @@ const ProfilePage = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-3 mb-6">
-                    <StatCard icon={Package}     label="Total orders"     value={stats.total} />
-                    <StatCard icon={ShoppingBag} label="Completed"        value={stats.completed} />
-                    <StatCard icon={CreditCard}  label="Total spent"      value={formatPrice(stats.spent)} />
+                    <StatCard icon={Package}     label="Total orders"  value={stats.total} />
+                    <StatCard icon={ShoppingBag} label="Completed"     value={stats.completed} />
+                    <StatCard icon={CreditCard}  label="Total spent"   value={formatPrice(stats.spent)} />
                 </div>
 
-                {/* Quick links for admin */}
-                {user?.role === 'admin' && (
-                    <Link to="/admin"
-                        className="flex items-center justify-between w-full bg-[#0a0a0a] text-white px-6 py-4 mb-6 hover:opacity-90 transition-opacity">
+                {/* Quick links */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <Link to="/wishlist"
+                        className="flex items-center justify-between bg-white border border-[#e8e8e8] px-6 py-4 hover:bg-[#fafafa] transition-colors">
                         <div className="flex items-center gap-3">
-                            <User size={16} strokeWidth={1.5} />
-                            <span className="text-[12px] font-medium tracking-wide uppercase">Admin Panel</span>
+                            <Heart size={16} strokeWidth={1.5} className="text-[#6b6b6b]" />
+                            <span className="text-[12px] font-medium tracking-wide uppercase text-[#0a0a0a]">Wishlist saya</span>
                         </div>
-                        <ChevronRight size={16} strokeWidth={1.5} />
+                        <ChevronRight size={14} strokeWidth={1.5} className="text-[#a0a0a0]" />
                     </Link>
-                )}
-
-                {/* Tabs */}
-                <div className="flex border-b border-[#e8e8e8] mb-6">
-                    {[{ key: 'orders', label: 'Order History' }].map(tab => (
-                        <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                            className={`px-6 py-3 text-[11px] font-medium tracking-wide uppercase border-b-2 transition-all ${
-                                activeTab === tab.key
-                                    ? 'border-[#0a0a0a] text-[#0a0a0a]'
-                                    : 'border-transparent text-[#a0a0a0] hover:text-[#6b6b6b]'
-                            }`}>
-                            {tab.label}
-                        </button>
-                    ))}
+                    {user?.role === 'admin' && (
+                        <Link to="/admin"
+                            className="flex items-center justify-between bg-[#0a0a0a] px-6 py-4 hover:opacity-90 transition-opacity">
+                            <div className="flex items-center gap-3">
+                                <User size={16} strokeWidth={1.5} className="text-white" />
+                                <span className="text-[12px] font-medium tracking-wide uppercase text-white">Admin Panel</span>
+                            </div>
+                            <ChevronRight size={14} strokeWidth={1.5} className="text-white" />
+                        </Link>
+                    )}
                 </div>
 
-                {/* Order list */}
+                {/* Order history */}
+                <div className="mb-2">
+                    <p className="label-sm text-[#0a0a0a] mb-4">Order History</p>
+                </div>
+
                 {loading ? (
                     <div className="space-y-3">
                         {[1,2,3].map(i => <div key={i} className="h-20 bg-[#f4f4f4] animate-pulse" />)}
@@ -130,8 +130,8 @@ const ProfilePage = () => {
                 ) : (
                     <div className="bg-white border border-[#e8e8e8]">
                         {orders.map((order, idx) => (
-                            <div key={order.id}
-                                className={`px-6 py-5 flex items-center justify-between hover:bg-[#fafafa] transition-colors ${idx < orders.length - 1 ? 'border-b border-[#e8e8e8]' : ''}`}>
+                            <Link key={order.id} to={`/orders/${order.id}`}
+                                className={`flex items-center justify-between px-6 py-5 hover:bg-[#fafafa] transition-colors group ${idx < orders.length - 1 ? 'border-b border-[#e8e8e8]' : ''}`}>
                                 <div className="flex items-center gap-5">
                                     <div className="w-9 h-9 bg-[#f4f4f4] flex items-center justify-center flex-shrink-0">
                                         <Package size={14} className="text-[#a0a0a0]" strokeWidth={1.5} />
@@ -142,17 +142,16 @@ const ProfilePage = () => {
                                             <StatusBadge status={order.status || 'Pending'} />
                                         </div>
                                         <p className="text-[11px] text-[#a0a0a0]">
-                                            {new Date(order.order_date).toLocaleDateString('id-ID', {
-                                                day: 'numeric', month: 'long', year: 'numeric'
-                                            })}
+                                            {new Date(order.order_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                                             {order.payment_method && ` · ${order.payment_method}`}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="text-right">
+                                <div className="flex items-center gap-3">
                                     <p className="text-[14px] font-medium text-[#0a0a0a]">{formatPrice(order.total_amount)}</p>
+                                    <ChevronRight size={14} strokeWidth={1.5} className="text-[#a0a0a0] group-hover:text-[#0a0a0a] transition-colors" />
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

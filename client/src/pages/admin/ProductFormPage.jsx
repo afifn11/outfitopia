@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Image, Tag, Star, DollarSign, Package, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Image, Tag, Star, DollarSign, Package, FileText, Upload, X as XIcon } from 'lucide-react';
+import { useRef } from 'react';
 import api from '../../services/api';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -25,6 +26,28 @@ const ProductFormPage = () => {
     const [allCategories, setAllCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('image', file);
+        setUploading(true);
+        try {
+            const res = await api.post('/upload/image', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setProduct(prev => ({ ...prev, image: res.data.imageUrl }));
+            MySwal.fire({ title: 'Upload berhasil!', icon: 'success', timer: 1200, showConfirmButton: false });
+        } catch (err) {
+            MySwal.fire({ title: 'Upload gagal', text: err.response?.data?.message || 'Coba lagi.', icon: 'error', confirmButtonColor: '#6366f1' });
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -228,10 +251,19 @@ const ProductFormPage = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label htmlFor="image" className="flex items-center text-sm font-medium text-slate-700 mb-2">
+                                <label className="flex items-center text-sm font-medium text-slate-700 mb-2">
                                     <Image className="w-4 h-4 mr-2" />
-                                    URL Gambar
+                                    Gambar Produk
                                 </label>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageUpload} className="hidden" />
+                                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                                        className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-300 rounded-lg text-sm text-slate-600 hover:border-indigo-400 hover:text-indigo-600 transition-colors disabled:opacity-50">
+                                        <Upload className="w-4 h-4" />
+                                        {uploading ? 'Mengupload...' : 'Upload dari komputer'}
+                                    </button>
+                                    <span className="text-xs text-slate-400">atau masukkan URL di bawah</span>
+                                </div>
                                 <input 
                                     type="text" 
                                     id="image" 
@@ -243,16 +275,17 @@ const ProductFormPage = () => {
                                     placeholder="https://example.com/image.jpg"
                                 />
                                 {product.image && (
-                                    <div className="mt-3">
-                                        <p className="text-sm text-slate-600 mb-2">Preview:</p>
+                                    <div className="mt-3 flex items-start gap-3">
                                         <img 
                                             src={product.image} 
                                             alt="Preview" 
-                                            className="w-32 h-32 object-cover rounded-lg border border-slate-200"
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                            }}
+                                            className="w-24 h-32 object-cover rounded-lg border border-slate-200"
+                                            onError={(e) => { e.target.style.display = 'none'; }}
                                         />
+                                        <button type="button" onClick={() => setProduct(p => ({ ...p, image: '' }))}
+                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors">
+                                            <XIcon className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 )}
                             </div>

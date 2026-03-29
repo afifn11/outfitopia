@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import WishlistButton from '../components/WishlistButton';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
@@ -80,7 +81,10 @@ const ProductDetailPage = () => {
             {product.categories?.[0] && (
               <p className="label-sm text-[#a0a0a0] mb-3">{product.categories[0].name}</p>
             )}
-            <h1 className="text-[24px] font-normal tracking-tight text-[#0a0a0a] mb-2">{product.name}</h1>
+            <div className="flex items-start justify-between gap-4 mb-2">
+            <h1 className="text-[24px] font-normal tracking-tight text-[#0a0a0a]">{product.name}</h1>
+            <WishlistButton productId={product.id} size={18} className="flex-shrink-0 mt-1" />
+          </div>
             <p className="text-[18px] text-[#6b6b6b] mb-6">{formatPrice(product.price)}</p>
 
             {product.num_reviews > 0 && (
