@@ -1,7 +1,7 @@
 // /server/controllers/adminController.js - KODE LENGKAP DENGAN PERBAIKAN
 
 const pool = require('../config/db');
-const { sendEmail } = require('../utils/emailService');
+const { sendEmail, orderStatusEmail } = require('../utils/emailService');
 
 // === HELPER FUNCTIONS ===
 
@@ -214,7 +214,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { status } = req.body;
     
     // Validasi status
-    const validStatuses = ['Pending', 'Shipped', 'Completed', 'Cancelled'];
+    const validStatuses = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'];
     if (!validStatuses.includes(status)) {
         return res.status(400).json({ message: 'Status tidak valid' });
     }
@@ -258,20 +258,14 @@ exports.updateOrderStatus = async (req, res) => {
         if (orders.length > 0) {
             const customer = orders[0];
             
-            // Jalankan pengiriman email secara asynchronous
-            setImmediate(async () => {
-                try {
-                    const emailContent = generateOrderStatusEmail(status, customer);
-                    await sendEmail({
-                        to: customer.email,
-                        subject: `Update Status Pesanan Anda #${customer.id}`,
-                        html: emailContent
-                    });
-                    console.log(`Email notification sent to ${customer.email} for order #${id}`);
-                } catch (emailError) {
-                    console.error(`Failed to send email notification for order #${id}:`, emailError);
-                }
-            });
+            // Kirim email status update (non-blocking)
+            orderStatusEmail({
+                to:      customer.email,
+                name:    customer.name,
+                orderId: id,
+                status,
+                total:   customer.total_amount,
+            }).catch(e => console.error(`[Email] Order status failed for #${id}:`, e.message));
         }
         
         res.json({ message: 'Status pesanan berhasil diperbarui' });

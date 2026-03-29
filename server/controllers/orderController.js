@@ -3,6 +3,7 @@ require('dotenv').config();
 const pool = require('../config/db');
 const midtransClient = require('midtrans-client');
 const crypto = require('crypto');
+const { sendEmail, orderConfirmationEmail, orderStatusEmail } = require('../utils/emailService');
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -12,7 +13,6 @@ const snap = new midtransClient.Snap({
     clientKey:    process.env.MIDTRANS_CLIENT_KEY,
 });
 
-// Verifikasi signature Midtrans — cegah request palsu di production
 const verifyMidtransSignature = (notification) => {
     const { order_id, status_code, gross_amount, signature_key } = notification;
     if (!signature_key) return false;
@@ -23,17 +23,15 @@ const verifyMidtransSignature = (notification) => {
     return hash === signature_key;
 };
 
-// POST /api/orders
+// ── POST /api/orders ──────────────────────────────────────────────────────────
 const createOrder = async (req, res) => {
     const { userDetails, cartItems, totalPrice } = req.body;
     const userId = req.user.id;
 
-    if (!cartItems || cartItems.length < 1) {
+    if (!cartItems || cartItems.length < 1)
         return res.status(400).json({ message: 'Keranjang kosong' });
-    }
-    if (!userDetails?.name || !userDetails?.phone || !userDetails?.address) {
+    if (!userDetails?.name || !userDetails?.phone || !userDetails?.address)
         return res.status(400).json({ message: 'Data pengiriman tidak lengkap' });
-    }
 
     let connection;
     try {
@@ -61,6 +59,18 @@ const createOrder = async (req, res) => {
         const [userRows] = await pool.query('SELECT name, email FROM users WHERE id = ?', [userId]);
         const user = userRows[0];
 
+        // Send order confirmation email (non-blocking)
+        if (user?.email) {
+            orderConfirmationEmail({
+                to:       user.email,
+                name:     user.name,
+                orderId,
+                items:    cartItems,
+                total:    totalPrice,
+                address:  userDetails.address,
+            }).catch(e => console.error('[Email] Order confirmation failed:', e.message));
+        }
+
         const itemDetails = cartItems.map(item => ({
             id:       String(item.id),
             price:    Math.round(item.price),
@@ -70,9 +80,8 @@ const createOrder = async (req, res) => {
 
         const subtotal     = cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
         const shippingCost = Math.round(totalPrice) - Math.round(subtotal);
-        if (shippingCost > 0) {
+        if (shippingCost > 0)
             itemDetails.push({ id: 'SHIPPING', price: shippingCost, quantity: 1, name: 'Ongkos Kirim' });
-        }
 
         const parameter = {
             transaction_details: {
@@ -113,80 +122,70 @@ const createOrder = async (req, res) => {
     }
 };
 
-// POST /api/orders/notification — webhook Midtrans
+// ── POST /api/orders/notification ────────────────────────────────────────────
 const handleNotification = async (req, res) => {
     try {
         const notification = req.body;
 
-        console.log('[Midtrans] Notification received:', {
+        console.log('[Midtrans] Notification:', {
             order_id:           notification.order_id,
             transaction_status: notification.transaction_status,
-            fraud_status:       notification.fraud_status,
             payment_type:       notification.payment_type,
         });
 
-        // Production: verifikasi signature wajib
-        // Development: skip (tombol "Tes URL" Midtrans pakai dummy ID tanpa signature valid)
-        if (IS_PRODUCTION) {
-            if (!verifyMidtransSignature(notification)) {
-                console.warn('[Midtrans] Invalid signature — request ditolak');
-                return res.status(403).json({ message: 'Invalid signature' });
-            }
-        } else {
-            console.log('[Midtrans] Development mode — signature verification skipped');
+        if (IS_PRODUCTION && !verifyMidtransSignature(notification)) {
+            console.warn('[Midtrans] Invalid signature');
+            return res.status(403).json({ message: 'Invalid signature' });
         }
 
         const { order_id, transaction_status, fraud_status, payment_type } = notification;
 
-        // Skip jika tidak ada order_id (test notification dari Midtrans dashboard)
-        if (!order_id) {
-            console.log('[Midtrans] No order_id — skipped');
-            return res.status(200).json({ message: 'Skipped' });
-        }
+        if (!order_id) return res.status(200).json({ message: 'Skipped' });
 
-        // Ekstrak orderId dari "OUTFITOPIA-{orderId}-{timestamp}"
         const parts   = order_id.split('-');
         const orderId = parts[1];
+        if (!orderId || isNaN(orderId)) return res.status(200).json({ message: 'Invalid format' });
 
-        if (!orderId || isNaN(orderId)) {
-            console.log('[Midtrans] Invalid order_id format:', order_id);
-            return res.status(200).json({ message: 'Invalid format, skipped' });
-        }
-
-        // Tentukan status order berdasarkan response Midtrans
         let orderStatus = 'Pending';
-        if (transaction_status === 'capture') {
+        if (transaction_status === 'capture')
             orderStatus = fraud_status === 'challenge' ? 'Pending' : 'Processing';
-        } else if (transaction_status === 'settlement') {
-            orderStatus = 'Processing';
-        } else if (transaction_status === 'pending') {
-            orderStatus = 'Pending';
-        } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
-            orderStatus = 'Cancelled';
-        }
+        else if (transaction_status === 'settlement') orderStatus = 'Processing';
+        else if (transaction_status === 'pending')    orderStatus = 'Pending';
+        else if (['cancel', 'deny', 'expire'].includes(transaction_status)) orderStatus = 'Cancelled';
 
         const [result] = await pool.query(
             'UPDATE orders SET status = ?, payment_method = ? WHERE id = ?',
             [orderStatus, payment_type || 'midtrans', orderId]
         );
 
-        if (result.affectedRows === 0) {
-            console.warn(`[Midtrans] Order ${orderId} tidak ditemukan di database`);
-        } else {
-            console.log(`[Midtrans] Order ${orderId} → ${orderStatus} (${payment_type})`);
+        if (result.affectedRows > 0 && orderStatus !== 'Pending') {
+            // Send status update email (non-blocking)
+            const [orderRows] = await pool.query(
+                `SELECT o.*, u.name as userName, u.email as userEmail
+                 FROM orders o JOIN users u ON o.user_id = u.id WHERE o.id = ?`,
+                [orderId]
+            );
+            if (orderRows[0]?.userEmail) {
+                orderStatusEmail({
+                    to:      orderRows[0].userEmail,
+                    name:    orderRows[0].userName,
+                    orderId,
+                    status:  orderStatus,
+                    total:   orderRows[0].total_amount,
+                }).catch(e => console.error('[Email] Status update failed:', e.message));
+            }
         }
 
-        // Selalu return 200 ke Midtrans — jika return non-200, Midtrans akan retry terus
+        console.log(`[Midtrans] Order ${orderId} → ${orderStatus}`);
         res.status(200).json({ message: 'OK' });
 
     } catch (error) {
         console.error('[Midtrans] Notification error:', error.message);
-        // Tetap return 200 agar Midtrans tidak retry — error sudah di-log di server
         res.status(200).json({ message: 'Received with error' });
     }
 };
 
-// GET /api/orders/my-orders
+// ── GET /api/orders/my-orders ─────────────────────────────────────────────────
 const getMyOrders = async (req, res) => {
     const userId = req.user.id;
     try {
@@ -201,7 +200,7 @@ const getMyOrders = async (req, res) => {
     }
 };
 
-// GET /api/orders/:id
+// ── GET /api/orders/:id ───────────────────────────────────────────────────────
 const getOrderById = async (req, res) => {
     const userId  = req.user.id;
     const orderId = req.params.id;
@@ -210,11 +209,11 @@ const getOrderById = async (req, res) => {
             'SELECT * FROM orders WHERE id = ? AND user_id = ?',
             [orderId, userId]
         );
-        if (order.length === 0) {
+        if (order.length === 0)
             return res.status(404).json({ message: 'Pesanan tidak ditemukan' });
-        }
+
         const [items] = await pool.query(
-            `SELECT oi.*, p.name as productName, p.image as productImage
+            `SELECT oi.*, p.name as productName, p.image as productImage, p.id as productId
              FROM order_items oi
              JOIN products p ON oi.product_id = p.id
              WHERE oi.order_id = ?`,
